@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: "Raleway", sans-serif;
+  margin: 0px;
+}
+
+input,
+textarea {
+  color: #000;
+}
