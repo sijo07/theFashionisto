@@ -1,4 +1,5 @@
 import ReactDOM from "react-dom/client";
+import { Suspense, lazy } from "react";
 import "./index.css";
 import App from "./App.jsx";
 import { Provider } from "react-redux";
@@ -18,13 +19,14 @@ import {
   OrderList,
 } from "./pages/admin/index.js";
 // Auth
-import Login from "./pages/auth/login.jsx";
-import Register from "./pages/auth/register";
+const Login = lazy(() => import("./pages/auth/login.jsx"));
+const Register = lazy(() => import("./pages/auth/register.jsx"));
 
 import Profile from "./pages/user/profile";
 import ChangePassword from "./pages/user/changePass.jsx";
 
-import Home from "./pages/home.jsx";
+const Home = lazy(() => import("./pages/home.jsx"));
+
 import Favorites from "./pages/products/Favorites.jsx";
 import ProductDetails from "./pages/products/ProductDetails.jsx";
 
@@ -39,8 +41,31 @@ import Contact from "./components/contact.jsx";
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      <Route
+        index={true}
+        path="/"
+        element={
+          <Suspense fallback={<div>Loading...</div>}>
+            <Home />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/login"
+        element={
+          <Suspense fallback={<div>Loading...</div>}>
+            <Login />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <Suspense fallback={<div>Loading...</div>}>
+            <Register />
+          </Suspense>
+        }
+      />
       <Route index={true} path="/" element={<Home />} />
       <Route path="/favorite" element={<Favorites />} />
       <Route path="/product/:id" element={<ProductDetails />} />
