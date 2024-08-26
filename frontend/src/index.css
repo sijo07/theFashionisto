@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,9 +6,12 @@
 body {
   font-family: "Raleway", sans-serif;
   margin: 0px;
+  font-feature-settings: "lnum" 1;
 }
 
 input,
 textarea {
   color: #000;
 }
+
+

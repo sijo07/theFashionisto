@@ -8,16 +8,7 @@ import {
 } from "../../redux/api/productApiSlice";
 import Loader from "../../components/loader";
 import Message from "../../components/message";
-import {
-  FaBox,
-  FaClock,
-  FaShoppingCart,
-  FaStar,
-  FaStore,
-} from "react-icons/fa";
-import moment from "moment";
 import HeartIcon from "./HeartIcon";
-import Ratings from "./Ratings";
 import ProductTabs from "./ProductTabs";
 import { addToCart } from "../../redux/features/cart/cartSlice";
 
@@ -62,127 +53,103 @@ const ProductDetails = () => {
     dispatch(addToCart({ ...product, qty }));
     navigate("/cart");
   };
-
   return (
     <>
-      <div>
-        <Link
-          to="/"
-          className="text-white font-semibold hover:underline ml-[10rem]"
-        >
-          Go Back
-        </Link>
-      </div>
-
-      {isLoading ? (
-        <Loader />
-      ) : error ? (
-        <Message variant="danger">
-          {error?.data?.message || error.message}
-        </Message>
-      ) : (
-        <>
-          <div className="flex flex-wrap relative items-between mt-[2rem] ml-[10rem]">
-            <div>
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-full xl:w-[50rem] lg:w-[45rem] md:w-[30rem] sm:w-[20rem] mr-[2rem]"
-              />
-
-              <HeartIcon product={product} />
-            </div>
-
-            <div className="flex flex-col justify-between">
-              <h2 className="text-2xl font-semibold">{product.name}</h2>
-              <p className="my-4 xl:w-[35rem] lg:w-[35rem] md:w-[30rem] text-[#B0B0B0]">
-                {product.description}
-              </p>
-
-              <p className="text-5xl my-4 font-extrabold">$ {product.price}</p>
-
-              <div className="flex items-center justify-between w-[20rem]">
-                <div className="one">
-                  <h1 className="flex items-center mb-6">
-                    <FaStore className="mr-2 text-white" /> Brand:{" "}
-                    {product.brand}
-                  </h1>
-                  <h1 className="flex items-center mb-6 w-[20rem]">
-                    <FaClock className="mr-2 text-white" /> Added:{" "}
-                    {moment(product.createAt).fromNow()}
-                  </h1>
-                  <h1 className="flex items-center mb-6">
-                    <FaStar className="mr-2 text-white" /> Reviews:{" "}
-                    {product.numReviews}
-                  </h1>
-                </div>
-
-                <div className="two">
-                  <h1 className="flex items-center mb-6">
-                    <FaStar className="mr-2 text-white" /> Ratings: {rating}
-                  </h1>
-                  <h1 className="flex items-center mb-6">
-                    <FaShoppingCart className="mr-2 text-white" /> Quantity:{" "}
-                    {product.quantity}
-                  </h1>
-                  <h1 className="flex items-center mb-6 w-[10rem]">
-                    <FaBox className="mr-2 text-white" /> In Stock:{" "}
-                    {product.countInStock}
-                  </h1>
-                </div>
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 flex justify-items-center">
+        {isLoading ? (
+          <Loader />
+        ) : error ? (
+          <Message variant="danger">
+            {error?.data?.message || error.message}
+          </Message>
+        ) : (
+          <>
+            <section>
+              <div className="text-sm text-gray-500 py-4">
+                <Link
+                  to="/"
+                  className="hover:underline uppercase hover:font-semibold"
+                >
+                  Home&nbsp;
+                </Link>
+                <Link
+                  to="/shop"
+                  className="hover:underline uppercase hover:font-semibold"
+                >
+                  /&nbsp;Shop&nbsp;
+                </Link>
+                <Link
+                  to={`/product/${product.brand}`}
+                  className="hover:underline uppercase hover:font-semibold"
+                >
+                  /&nbsp;{product.brand}
+                </Link>
               </div>
-
-              <div className="flex justify-between flex-wrap">
-                <Ratings
-                  value={product.rating}
-                  text={`${product.numReviews} reviews`}
+              <div className="relative">
+                <img
+                  src={product.image}
+                  alt={product.brand}
+                  className="w-96 h-96 object-cover"
                 />
-
-                {product.countInStock > 0 && (
-                  <div>
-                    <select
-                      value={qty}
-                      onChange={(e) => setQty(e.target.value)}
-                      className="p-2 w-[6rem] rounded-lg text-black"
-                    >
-                      {[...Array(product.countInStock).keys()].map((x) => (
-                        <option key={x + 1} value={x + 1}>
-                          {x + 1}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
+                <span className="absolute top-2 left-3 px-3 py-1">
+                  <HeartIcon product={product} />
+                </span>
               </div>
+            </section>
+            <section className="ml-10">
+              <div className="py-4"></div>
+              <div className="text-sm text-gray-500 py-4 text-start">
+                <h2 className="text-3xl font-bold mb-4 uppercase">
+                  {product.brand}
+                </h2>
+                <p className="text-gray-600 mb-4 capitalize">
+                  {product.description}
+                </p>
+                <div className="flex justify-items-center space-x-4 mb-2">
+                  <span className="text-xl text-teal-900 font-bold">
+                    &#8377;{product.price}
+                  </span>
+                  <span className="text-gray-500 line-through text-xl">
+                    &#8377;{product.cutPrice}
+                  </span>
+                </div>
+                <span className="text-[#649899] font-semibold">
+                  inclusive of all taxes
+                </span>
+                <div className="flex justify-items-center mt-4 w-40 h-10 p-2 border-2 border-gray-200 hover:border-gray-400">
+                  <div className="flex justify-items-center">
+                    {`${product.rating} Ratings`}
+                  </div>
+                  <span className="ml-2 text-gray-600">
+                    | {`${product.numReviews} Reviews`}
+                  </span>
+                </div>
 
-              <div className="btn-container">
+                <div className="mb-6 btn-container"></div>
                 <button
                   onClick={addToCartHandler}
-                  disabled={product.countInStock === 0}
-                  className="bg-pink-600 text-white py-2 px-4 rounded-lg mt-4 md:mt-0"
+                  className="w-[10rem] bg-[#649899] text-white py-3 px-6 rounded-md hover:bg-[#649892] cursor-pointer"
                 >
-                  Add To Cart
+                  Add to Bag
                 </button>
               </div>
-            </div>
-
-            <div className="mt-[5rem] container flex flex-wrap items-start justify-between ml-[10rem]">
-              <ProductTabs
-                loadingProductReview={loadingProductReview}
-                userInfo={userInfo}
-                submitHandler={submitHandler}
-                rating={rating}
-                setRating={setRating}
-                comment={comment}
-                setComment={setComment}
-                product={product}
-              />
-            </div>
-          </div>
-        </>
-      )}
+              <div className="mt-6">
+                <ProductTabs
+                  loadingProductReview={loadingProductReview}
+                  userInfo={userInfo}
+                  submitHandler={submitHandler}
+                  rating={rating}
+                  setRating={setRating}
+                  comment={comment}
+                  setComment={setComment}
+                  product={product}
+                />
+              </div>
+            </section>
+          </>
+        )}
+      </div>
     </>
   );
 };
-
 export default ProductDetails;

@@ -15,12 +15,12 @@ const cartSlice = createSlice({
 
       if (existItem) {
         state.cartItems = state.cartItems.map((x) =>
-          x._id === existItem._id ? item : x
+          x._id === existItem._id ? { ...x, qty: item.qty } : x
         );
       } else {
         state.cartItems = [...state.cartItems, item];
       }
-      return updateCart(state, item);
+      return updateCart(state);
     },
 
     removeFromCart: (state, action) => {
@@ -38,12 +38,12 @@ const cartSlice = createSlice({
       localStorage.setItem("cart", JSON.stringify(state));
     },
 
-    clearCartItems: (state, action) => {
+    clearCartItems: (state) => {
       state.cartItems = [];
       localStorage.setItem("cart", JSON.stringify(state));
     },
 
-    resetCart: (state) => (state = initialState),
+    resetCart: () => initialState,
   },
 });
 

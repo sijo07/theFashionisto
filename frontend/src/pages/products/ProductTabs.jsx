@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import Ratings from "./Ratings";
+import Ratings from "./ratings";
 import { useGetTopProductsQuery } from "../../redux/api/productApiSlice";
 import Brands from "../../components/brands";
 import Loader from "../../components/loader";
@@ -28,24 +28,26 @@ const ProductTabs = ({
   };
 
   return (
-    <div className="flex flex-col md:flex-row">
-      <section className="mr-[5rem]">
+    <div className="flex flex-col md:flex-row border-4">
+      <section className="mr-[5rem] border-4">
         <div
           className={`flex-1 p-4 cursor-pointer text-lg ${
             activeTab === 1 ? "font-bold" : ""
           }`}
           onClick={() => handleTabClick(1)}
         >
-          Write Your Review
+          Customer Reviews
         </div>
+
         <div
           className={`flex-1 p-4 cursor-pointer text-lg ${
             activeTab === 2 ? "font-bold" : ""
           }`}
           onClick={() => handleTabClick(2)}
         >
-          All Reviews
+          Write Your Review
         </div>
+
         <div
           className={`flex-1 p-4 cursor-pointer text-lg ${
             activeTab === 3 ? "font-bold" : ""
@@ -59,6 +61,33 @@ const ProductTabs = ({
       {/* Second Part */}
       <section>
         {activeTab === 1 && (
+          <>
+            <div className="">{product.reviews.length === 0 && <p>No Reviews</p>}</div>
+
+            <div>
+              {product.reviews.map((review) => (
+                <div
+                  key={review._id}
+                  className="p-4"
+                >
+                  <div className="flex justify-between">
+                    <strong className="text-[#B0B0B0]">{review.name}</strong>
+                    <p className="text-[#B0B0B0]">
+                      {review.createdAt.substring(0, 10)}
+                    </p>
+                  </div>
+
+                  <p className="my-4">{review.comment}</p>
+                  <Ratings value={review.rating} />
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </section>
+
+      <section>
+        {activeTab === 2 && (
           <div className="mt-4">
             {userInfo ? (
               <form onSubmit={submitHandler}>
@@ -111,33 +140,6 @@ const ProductTabs = ({
               </p>
             )}
           </div>
-        )}
-      </section>
-
-      <section>
-        {activeTab === 2 && (
-          <>
-            <div>{product.reviews.length === 0 && <p>No Reviews</p>}</div>
-
-            <div>
-              {product.reviews.map((review) => (
-                <div
-                  key={review._id}
-                  className="p-4 rounded-lg xl:ml-[2rem] sm:ml-[0rem] xl:w-[50rem] sm:w-[24rem] mb-5"
-                >
-                  <div className="flex justify-between">
-                    <strong className="text-[#B0B0B0]">{review.name}</strong>
-                    <p className="text-[#B0B0B0]">
-                      {review.createdAt.substring(0, 10)}
-                    </p>
-                  </div>
-
-                  <p className="my-4">{review.comment}</p>
-                  <Ratings value={review.rating} />
-                </div>
-              ))}
-            </div>
-          </>
         )}
       </section>
 
