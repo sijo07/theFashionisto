@@ -11,13 +11,15 @@ const Shipping = () => {
   const cart = useSelector((state) => state.cart);
   const { shippingAddress } = cart;
 
-  const [paymentMethod, setPaymentMethod] = useState("PayPal");
+  const [name, setName] = useState(shippingAddress.name || "");
+  const [phone, setPhone] = useState(shippingAddress.phone || "");
+  const [email, setEmail] = useState(shippingAddress.email || "");
   const [address, setAddress] = useState(shippingAddress.address || "");
   const [city, setCity] = useState(shippingAddress.city || "");
-  const [postalCode, setPostalCode] = useState(
-    shippingAddress.postalCode || ""
-  );
+  const [pinCode, setPinCode] = useState(shippingAddress.pinCode || "");
+  const [state, setState] = useState(shippingAddress.state || "");
   const [country, setCountry] = useState(shippingAddress.country || "");
+  const [paymentMethod, setPaymentMethod] = useState("PayPal");
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -25,12 +27,22 @@ const Shipping = () => {
   const submitHandler = (e) => {
     e.preventDefault();
 
-    dispatch(saveShippingAddress({ address, city, postalCode, country }));
+    dispatch(
+      saveShippingAddress({
+        name,
+        phone,
+        email,
+        address,
+        city,
+        pinCode,
+        state,
+        country,
+      })
+    );
     dispatch(savePaymentMethod(paymentMethod));
     navigate("/placeorder");
   };
 
-  // Payment
   useEffect(() => {
     if (!shippingAddress.address) {
       navigate("/shipping");
@@ -38,81 +50,128 @@ const Shipping = () => {
   }, [navigate, shippingAddress]);
 
   return (
-    <div className="container mx-auto mt-10">
+    <div className="max-w-3xl mx-auto px-3 py-6">
       <ProgressSteps step1 step2 />
-      <div className="mt-[10rem] flex justify-around items-center flex-wrap">
-        <form onSubmit={submitHandler} className="w-[40rem]">
-          <h1 className="text-2xl font-semibold mb-4">Shipping</h1>
-          <div className="mb-4">
-            <label className="block text-white mb-2">Address</label>
-            <input
-              type="text"
-              className="w-full p-2 border rounded"
-              placeholder="Enter address"
-              value={address}
-              required
-              onChange={(e) => setAddress(e.target.value)}
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-white mb-2">City</label>
-            <input
-              type="text"
-              className="w-full p-2 border rounded"
-              placeholder="Enter city"
-              value={city}
-              required
-              onChange={(e) => setCity(e.target.value)}
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-white mb-2">Postal Code</label>
-            <input
-              type="text"
-              className="w-full p-2 border rounded"
-              placeholder="Enter postal code"
-              value={postalCode}
-              required
-              onChange={(e) => setPostalCode(e.target.value)}
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-white mb-2">Country</label>
-            <input
-              type="text"
-              className="w-full p-2 border rounded"
-              placeholder="Enter country"
-              value={country}
-              required
-              onChange={(e) => setCountry(e.target.value)}
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-gray-400">Select Method</label>
-            <div className="mt-2">
-              <label className="inline-flex items-center">
-                <input
-                  type="radio"
-                  className="form-radio text-pink-500"
-                  name="paymentMethod"
-                  value="PayPal"
-                  checked={paymentMethod === "PayPal"}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                />
 
-                <span className="ml-2">PayPal or Credit Card</span>
-              </label>
-            </div>
-          </div>
+      <header className="text-center mb-6">
+        <h1 className="text-3xl font-semibold">Billing details</h1>
+      </header>
 
+      <form onSubmit={submitHandler} className="space-y-4">
+        <div>
+          <label htmlFor="full-name" className="block text-base font-medium">
+            Full Name*
+          </label>
+          <input
+            type="text"
+            id="full-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="mt-1 block w-full border border-gray-300 rounded-md p-1.5 text-sm"
+            required
+          />
+        </div>
+        <div>
+          <label htmlFor="phone" className="block text-base font-medium">
+            Phone*
+          </label>
+          <input
+            type="text"
+            id="phone"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className="mt-1 block w-full border border-gray-300 rounded-md p-1.5 text-sm"
+            required
+          />
+        </div>
+        <div>
+          <label htmlFor="email" className="block text-base font-medium">
+            Email address*
+          </label>
+          <input
+            type="email"
+            id="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="mt-1 block w-full border border-gray-300 rounded-md p-1.5 text-sm"
+            required
+          />
+        </div>
+        <div>
+          <label htmlFor="address" className="block text-base font-medium">
+            Street address*
+          </label>
+          <input
+            type="text"
+            id="address"
+            placeholder="House number and street name"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            className="mt-1 block w-full border border-gray-300 rounded-md p-1.5 text-sm"
+            required
+          />
+        </div>
+        <div>
+          <label htmlFor="city" className="block text-base font-medium">
+            Town / City*
+          </label>
+          <input
+            type="text"
+            id="city"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            className="mt-1 block w-full border border-gray-300 rounded-md p-1.5 text-sm"
+            required
+          />
+        </div>
+        <div>
+          <label htmlFor="pin-code" className="block text-base font-medium">
+            Postal Code / Zip Code*
+          </label>
+          <input
+            type="text"
+            id="pin-code"
+            value={pinCode}
+            onChange={(e) => setPinCode(e.target.value)}
+            className="mt-1 block w-full border border-gray-300 rounded-md p-1.5 text-sm"
+            required
+          />
+        </div>
+        <div>
+          <label htmlFor="state" className="block text-base font-medium">
+            State / Province*
+          </label>
+          <input
+            type="text"
+            id="state"
+            value={state}
+            onChange={(e) => setState(e.target.value)}
+            className="mt-1 block w-full border border-gray-300 rounded-md p-1.5 text-sm"
+            required
+          />
+        </div>
+        <div>
+          <label htmlFor="country" className="block text-base font-medium">
+            Country*
+          </label>
+          <input
+            type="text"
+            id="country"
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
+            className="mt-1 block w-full border border-gray-300 rounded-md p-1.5 text-sm"
+            required
+          />
+        </div>
+        <div className="mt-6 text-right">
           <button
-            className="bg-pink-500 text-white py-2 px-4 rounded-full text-lg w-full"
             type="submit"
+            className="bg-orange-600 text-white text-lg font-bold py-2 px-4 rounded-md"
           >
-            Continue
+            Place Order
           </button>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   );
 };
