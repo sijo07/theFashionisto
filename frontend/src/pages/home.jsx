@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useGetProductsQuery } from "../redux/api/productApiSlice";
-import { Loader, Message, Brands, Hero } from "../components/index";
-import Product from "./products/Product";
+import { Loader, Message, Hero,Brands } from "../components/index";
+import { Product } from "./products/index";
 
 const Home = () => {
   const { keyword } = useParams();
@@ -10,7 +10,8 @@ const Home = () => {
   return (
     <>
       <Hero />
-      {!keyword ? <Brands /> : null}
+      {!keyword ? 
+      <Brands/>: null}
       {isLoading ? (
         <Loader />
       ) : isError ? (

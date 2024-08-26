@@ -34,6 +34,7 @@ import Shop from "./pages/shop.jsx";
 import Shipping from "./pages/orders/shipping.jsx";
 import PlaceOrder from "./pages/orders/placeOrder.jsx";
 import Order from "./pages/orders/order.jsx";
+import Contact from "./components/contact.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -45,8 +46,8 @@ const router = createBrowserRouter(
       <Route path="/product/:id" element={<ProductDetails />} />
       <Route path="/cart" element={<Cart />} />
       <Route path="/shop" element={<Shop />} />
+      <Route path="/contact" element={<Contact />} />
 
-      
       <Route path="" element={<PrivateRoute />}>
         <Route path="/profile" element={<Profile />} />
         <Route path="/changePassword" element={<ChangePassword />} />

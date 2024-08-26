@@ -1,0 +1,10 @@
+export { default as Capsule } from "./capsule";
+export { default as Favorites } from "./favorites";
+export { default as FavoritesCount } from "./favoritesCount";
+export { default as HeartIcon } from "./heartIcon";
+export { default as Product } from "./product";
+export { default as ProductCard } from "./productCard";
+export { default as ProductDetails } from "./productDetails";
+export { default as Products } from "./products";
+export { default as ProductTabs } from "./productTabs";
+export { default as Ratings } from "./ratings";

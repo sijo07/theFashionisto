@@ -5,3 +5,4 @@ export { default as Message } from "./message";
 export { default as PrivateRoute } from "./privateRoute";
 export { default as ProgressSteps } from "./progressSteps";
 export { default as Hero } from "./hero";
+export { default as Contact } from "./contact";

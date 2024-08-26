@@ -55,7 +55,7 @@ const ProductDetails = () => {
   };
   return (
     <>
-      <div className="mx-auto px-4 sm:px-6 lg:px-8 flex justify-items-center">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 flex justify-items-center max-w-6xl">
         {isLoading ? (
           <Loader />
         ) : error ? (
@@ -116,7 +116,7 @@ const ProductDetails = () => {
                 <span className="text-[#649899] font-semibold">
                   inclusive of all taxes
                 </span>
-                <div className="flex justify-items-center mt-4 w-40 h-10 p-2 border-2 border-gray-200 hover:border-gray-400">
+                <div className="flex justify-items-center mt-4 w-[12rem] h-10 p-2 border-2 border-gray-200 hover:border-gray-400">
                   <div className="flex justify-items-center">
                     {`${product.rating} Ratings`}
                   </div>
@@ -128,26 +128,26 @@ const ProductDetails = () => {
                 <div className="mb-6 btn-container"></div>
                 <button
                   onClick={addToCartHandler}
-                  className="w-[10rem] bg-[#649899] text-white py-3 px-6 rounded-md hover:bg-[#649892] cursor-pointer"
+                  className="w-[10rem] bg-[#649899] text-white py-3 px-6 rounded-md hover:bg-[#649869] cursor-pointer"
                 >
                   Add to Bag
                 </button>
               </div>
-              <div className="mt-6">
-                <ProductTabs
-                  loadingProductReview={loadingProductReview}
-                  userInfo={userInfo}
-                  submitHandler={submitHandler}
-                  rating={rating}
-                  setRating={setRating}
-                  comment={comment}
-                  setComment={setComment}
-                  product={product}
-                />
-              </div>
             </section>
           </>
         )}
+      </div>
+      <div className="mt-10 ml-32  justify-items-center">
+        <ProductTabs
+          loadingProductReview={loadingProductReview}
+          userInfo={userInfo}
+          submitHandler={submitHandler}
+          rating={rating}
+          setRating={setRating}
+          comment={comment}
+          setComment={setComment}
+          product={product}
+        />
       </div>
     </>
   );

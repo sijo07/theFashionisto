@@ -6,9 +6,8 @@ import {
   useGetProductDetailsQuery,
   useCreateReviewMutation,
 } from "../../redux/api/productApiSlice";
-import Rating from "./Rating";
-import Loader from "../../components/loader";
-import Message from "../../components/message";
+import { HeartIcon, ProductTabs,Ratings } from "./index";
+import { Loader, Message } from "../../components/index";
 import { addToCart } from "../../redux/features/cart/cartSlice";
 import {
   FaBox,
@@ -18,8 +17,6 @@ import {
   FaStore,
 } from "react-icons/fa";
 import moment from "moment";
-import ProductTabs from "./Tabs";
-import HeartIcon from "./HeartIcon";
 
 const Product = () => {
   const { id: productId } = useParams();
@@ -131,7 +128,7 @@ const Product = () => {
               </div>
 
               <div className="flex justify-between flex-wrap">
-                <Rating
+                <Ratings
                   value={product.rating}
                   text={`${product.numReviews} reviews`}
                 />
