@@ -9,7 +9,7 @@ const Product = ({ product }) => {
           <div className="relative px-4 py-3">
             <Link to={`/product/${product._id}`}>
               <img
-                className="w-[20rem] h-[20rem] object-cover"
+                className="w-[14rem] h-[18rem] object-cover"
                 src={product.image}
                 alt={product.brand}
               />

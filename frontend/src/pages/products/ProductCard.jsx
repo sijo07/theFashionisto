@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { FcPlus, FcRating } from "react-icons/fc";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../../redux/features/cart/cartSlice";
+import { removeFromFavorites } from "../../redux/features/favorites/favoriteSlice";
 import { toast } from "react-toastify";
 import HeartIcon from "./HeartIcon";
 
@@ -10,7 +11,8 @@ const ProductCard = ({ p }) => {
 
   const addToCartHandler = (product, qty) => {
     dispatch(addToCart({ ...product, qty }));
-    toast.success("Item added successfully");
+    dispatch(removeFromFavorites({ _id: product._id }));
+    toast.success("Item added to cart");
   };
 
   return (

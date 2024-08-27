@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { FcLike, FcLikePlaceholder } from "react-icons/fc";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
 import {
