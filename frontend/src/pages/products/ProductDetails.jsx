@@ -13,7 +13,6 @@ import {
 } from "../../utils/localStorage";
 import Loader from "../../components/Loader";
 import Message from "../../components/Message";
-import HeartIcon from "./HeartIcon";
 import ProductTabs from "./ProductTabs";
 import { addToCart } from "../../redux/features/cart/cartSlice";
 import {
@@ -32,6 +31,7 @@ const ProductDetails = () => {
   const [qty, setQty] = useState(1);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
+  const [hasReviewed, setHasReviewed] = useState(false);
 
   const {
     data: product,
@@ -48,9 +48,15 @@ const ProductDetails = () => {
   const submitHandler = async (e) => {
     e.preventDefault();
 
+    if (hasReviewed) {
+      toast.info("You have already submitted a review for this product.");
+      return;
+    }
+
     try {
       await createReview({ productId, rating, comment }).unwrap();
       refetch();
+      setHasReviewed(true);
       toast.success("Review created successfully");
     } catch (error) {
       toast.error(error?.data?.message || error.message);
@@ -75,6 +81,17 @@ const ProductDetails = () => {
       productRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [location.state]);
+
+  useEffect(() => {
+    if (userInfo) {
+      const userReview = product?.reviews?.find(
+        (review) => review.user === userInfo._id
+      );
+      if (userReview) {
+        setHasReviewed(true);
+      }
+    }
+  }, [product?.reviews, userInfo]);
 
   const toggleFavorites = () => {
     if (isFavorite) {
@@ -119,7 +136,6 @@ const ProductDetails = () => {
           </Link>
         </div>
 
-        {/* Product Information Section */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-10">
           <div className="relative">
             <img
@@ -204,8 +220,12 @@ const ProductDetails = () => {
         </section>
       </div>
 
-      {/* Product Reviews and Additional Info Section */}
       <div className="mt-10">
+        {userInfo && hasReviewed && (
+          <Message variant="info">
+            You have already reviewed this product.
+          </Message>
+        )}
         <ProductTabs
           loadingProductReview={loadingProductReview}
           userInfo={userInfo}
@@ -215,6 +235,7 @@ const ProductDetails = () => {
           comment={comment}
           setComment={setComment}
           product={product}
+          hasReviewed={hasReviewed}
         />
       </div>
     </>

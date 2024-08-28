@@ -1,6 +1,10 @@
+
 const Brands = () => {
   return (
-    <div>Brands</div>
-  )
-}
-export default Brands
+    <>
+    <h1>Cart</h1>
+    </>
+  );
+};
+
+export default Brands;

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useGetFilteredProductsQuery } from "../redux/api/productApiSlice";
 import { useFetchCategoriesQuery } from "../redux/api/categoryApiSlice";
-
 import {
   setCategories,
   setProducts,
@@ -45,6 +44,7 @@ const Shop = () => {
 
   const [priceFilter, setPriceFilter] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false); // New state for filter menu
 
   useEffect(() => {
     if (categoriesError) {
@@ -131,10 +131,27 @@ const Shop = () => {
   const secondLevelCategories =
     categories?.filter((cat) => cat.parentId === selectedCategory) || [];
 
+  const toggleFilterMenu = () => {
+    setIsFilterMenuOpen((prev) => !prev);
+  };
+
   return (
     <div className="container mx-auto">
-      <div className="flex md:flex-row">
-        <div className="bg-teal-600 p-3 mt-2 mb-2">
+      <div className="flex flex-col md:flex-row">
+        {/* Hamburger Button */}
+        <button
+          onClick={toggleFilterMenu}
+          className="md:hidden bg-teal-600 text-white p-2 mt-2 mb-2 rounded"
+        >
+          {isFilterMenuOpen ? "Close Filters" : "Open Filters"}
+        </button>
+
+        {/* Filter Menu */}
+        <div
+          className={`${
+            isFilterMenuOpen ? "block" : "hidden"
+          } md:block bg-teal-600 p-3 mt-2 mb-2 transition-all duration-300 ease-in-out`}
+        >
           <h2 className="h4 text-center py-2 bg-black text-white rounded-full mb-2">
             Filter by Categories
           </h2>
@@ -235,6 +252,7 @@ const Shop = () => {
           </div>
         </div>
 
+        {/* Products Section */}
         <div className="p-3">
           <h2 className="h4 text-center mb-2">{products?.length} Products</h2>
           <div className="flex flex-wrap">

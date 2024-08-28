@@ -15,6 +15,7 @@ const ProductTabs = ({
   comment,
   setComment,
   product,
+  hasReviewed,
 }) => {
   const { data, isLoading } = useGetTopProductsQuery();
   const navigate = useNavigate();
@@ -33,7 +34,6 @@ const ProductTabs = ({
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="flex">
-        {/* Sidebar */}
         <div className="w-1/4 border-r-2 pr-6">
           <div className="flex flex-col">
             {[
@@ -58,7 +58,6 @@ const ProductTabs = ({
           </div>
         </div>
 
-        {/* Tab Content */}
         <div className="w-3/4 pl-6">
           {activeTab === 1 && (
             <div>
@@ -91,43 +90,49 @@ const ProductTabs = ({
           {activeTab === 2 && (
             <div className="mt-4">
               {userInfo ? (
-                <form
-                  onSubmit={submitHandler}
-                  className="bg-gray-50 pl-4 rounded-lg shadow-sm w-[30rem]"
-                >
-                  <h2 className="text-xl font-semibold mb-4 text-gray-800">
-                    Share Your Thoughts
-                  </h2>
-                  <div className="mb-4">
-                    <textarea
-                      name="Review"
-                      rows="1"
-                      placeholder="Type Review!"
-                      value={comment}
-                      onChange={(e) => setComment(e.target.value)}
-                      className="bg-white border-2 rounded-lg p-3 w-full focus:outline-none border-gray-300 resize-none"
-                      required
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
+                hasReviewed ? (
+                  <p className="text-teal-800 font-semibold">
+                    You have already submitted a review for this product.
+                  </p>
+                ) : (
+                  <form
+                    onSubmit={submitHandler}
+                    className="bg-gray-50 pl-4 rounded-lg shadow-sm w-[30rem]"
+                  >
+                    <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                      Share Your Thoughts
+                    </h2>
                     <div className="mb-4">
-                      <StarRating
-                        value={rating}
-                        text="Your Rating"
-                        size="20px"
-                        className="custom-class"
-                        onChange={(newRating) => setRating(newRating)}
+                      <textarea
+                        name="Review"
+                        rows="1"
+                        placeholder="Type Review!"
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        className="bg-white border-2 rounded-lg p-3 w-full focus:outline-none border-gray-300 resize-none"
+                        required
                       />
                     </div>
-                    <button
-                      type="submit"
-                      disabled={loadingProductReview}
-                      className="bg-[#649899] text-white px-6 py-2 rounded-md hover:bg-[#649869] cursor-pointer"
-                    >
-                      Submit
-                    </button>
-                  </div>
-                </form>
+                    <div className="flex items-center justify-between">
+                      <div className="mb-4">
+                        <StarRating
+                          value={rating}
+                          text="Your Rating"
+                          size="20px"
+                          className="custom-class"
+                          onChange={(newRating) => setRating(newRating)}
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={loadingProductReview}
+                        className="bg-[#649899] text-white px-6 py-2 rounded-md hover:bg-[#649869] cursor-pointer"
+                      >
+                        {loadingProductReview ? "Submitting..." : "Submit"}
+                      </button>
+                    </div>
+                  </form>
+                )
               ) : (
                 <p className="text-gray-600">
                   Please{" "}

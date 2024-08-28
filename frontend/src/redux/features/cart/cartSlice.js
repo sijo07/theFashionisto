@@ -1,6 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { removeFromFavorites } from "../favorites/favoriteSlice"; 
-
 import { updateCart } from "../../../Utils/cartUtils";
 
 const initialState = localStorage.getItem("cart")
@@ -47,11 +45,6 @@ const cartSlice = createSlice({
     },
 
     resetCart: () => initialState,
-  },
-  extraReducers: (builder) => {
-    builder.addCase(addToCart, (state, action) => {
-      action.asyncDispatch(removeFromFavorites(action.payload));
-    });
   },
 });
 
