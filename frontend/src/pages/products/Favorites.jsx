@@ -20,7 +20,7 @@ const Favorites = () => {
   };
 
   return (
-    <div className="bg-gray-50 py-10 min-h-screen">
+    <div className="bg-gray-50 py-8 min-h-screen">
       {/* Breadcrumb Navigation */}
       <nav className="container mx-auto px-4 text-sm text-gray-500 py-4">
         <Link to="/" className="hover:underline">
@@ -35,58 +35,56 @@ const Favorites = () => {
       </nav>
 
       <div className="container mx-auto px-4">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center uppercase tracking-wide">
-          Your Favorite Products
+        <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center uppercase tracking-wide">
+          Your Favorites
         </h1>
 
         {favorites.length > 0 ? (
-          <div className="grid gap-8 lg:grid-cols-3 md:grid-cols-2 grid-cols-1">
+          <div className="grid gap-6 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1">
             {favorites.map((product) => (
               <div
                 key={product._id}
-                className="relative bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200 flex flex-col"
+                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200"
               >
-                <div className="relative">
+                <div className="relative group">
                   <Link to={`/product/${product.id}`}>
                     <img
-                      className="w-full h-64 object-cover"
+                      className="w-full h-48 object-cover transition-transform duration-300 ease-in-out transform group-hover:scale-105"
                       src={product.image}
                       alt={product.name}
                     />
                   </Link>
-                  <div className="absolute top-4 right-4 flex space-x-2">
+                  <div className="absolute top-2 right-2 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     <HeartIcon product={product} />
+                    <CartIcon
+                      product={product}
+                      onClick={() => addToCartHandler(product)}
+                    />
                   </div>
                 </div>
-                <div className="flex flex-col justify-between flex-1 p-6">
-                  <div>
-                    <h2 className="text-xl font-semibold text-gray-900 mb-2 truncate capitalize">
-                      {product.name}
-                    </h2>
-                    <p className="text-gray-500 text-sm mb-4 capitalize">
-                      {product.brand}
-                    </p>
-                    <div className="text-lg font-bold text-gray-900">
+                <div className="p-4">
+                  <h2 className="text-gray-900 font-semibold text-lg truncate">
+                    {product.name}
+                  </h2>
+                  <p className="text-gray-500 text-sm mt-1 truncate capitalize">
+                    {product.brand}
+                  </p>
+                  <div className="mt-4 flex justify-between items-center">
+                    <p className="text-gray-900 font-bold text-lg">
                       {product.price?.toLocaleString("en-IN", {
                         style: "currency",
                         currency: "INR",
                       })}
-                      {product.cutPrice && (
-                        <span className="line-through text-gray-400 text-sm ml-2">
-                          {product.cutPrice?.toLocaleString("en-IN", {
-                            style: "currency",
-                            currency: "INR",
-                          })}
-                        </span>
-                      )}
-                    </div>
+                    </p>
+                    {product.cutPrice && (
+                      <p className="text-gray-400 text-sm line-through">
+                        {product.cutPrice?.toLocaleString("en-IN", {
+                          style: "currency",
+                          currency: "INR",
+                        })}
+                      </p>
+                    )}
                   </div>
-                  <button
-                    onClick={() => addToCartHandler(product)}
-                    className="mt-6 bg-[#649899] text-white text-center py-2 rounded-lg uppercase tracking-wider hover:bg-[#558080] transition-colors duration-200"
-                  >
-                    Add to Cart
-                  </button>
                 </div>
               </div>
             ))}
