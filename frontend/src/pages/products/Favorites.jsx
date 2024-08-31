@@ -34,7 +34,10 @@ const Favorites = () => {
         <span className="font-semibold text-gray-700">Favorites</span>
       </nav>
 
-      <div className="container mx-auto px-4"
+      <div className="container mx-auto px-4">
+        <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center uppercase tracking-wide">
+          Your Favorites
+        </h1>
 
         {favorites.length > 0 ? (
           <div className="grid gap-6 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1">
