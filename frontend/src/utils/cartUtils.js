@@ -5,7 +5,7 @@ export const addDecimals = (num) => {
 
 // Function to update cart state
 export const updateCart = (state) => {
-  // Check if cartItems exists
+  // Check if cartItems exists and is an array
   if (!state.cartItems || !Array.isArray(state.cartItems)) {
     throw new Error("Invalid cartItems");
   }
@@ -22,7 +22,7 @@ export const updateCart = (state) => {
   state.shippingPrice = addDecimals(shippingPrice);
 
   // Calculate tax price
-  const taxPrice = addDecimals(Number((0.15 * itemsPrice).toFixed(2)));
+  const taxPrice = addDecimals(0.15 * itemsPrice);
   state.taxPrice = taxPrice;
 
   // Calculate total price
