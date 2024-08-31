@@ -21,22 +21,22 @@ const cartSlice = createSlice({
         state.cartItems = [...state.cartItems, item];
       }
 
-      // Update cart in localStorage
+      // Update cart in localStorage and state
       updateCart(state);
     },
 
     removeFromCart: (state, action) => {
       state.cartItems = state.cartItems.filter((x) => x._id !== action.payload);
 
-      // Update cart in localStorage
+      // Update cart in localStorage and state
       updateCart(state);
     },
 
     setCartItems: (state, action) => {
       state.cartItems = action.payload;
 
-      // Update cart in localStorage
-      localStorage.setItem("cart", JSON.stringify(state));
+      // Update cart in localStorage and state
+      updateCart(state);
     },
 
     saveShippingAddress: (state, action) => {
@@ -56,8 +56,8 @@ const cartSlice = createSlice({
     clearCartItems: (state) => {
       state.cartItems = [];
 
-      // Update cart in localStorage
-      localStorage.setItem("cart", JSON.stringify(state));
+      // Update cart in localStorage and state
+      updateCart(state);
     },
 
     resetCart: () => initialState,
