@@ -120,19 +120,21 @@ const ProductDetails = () => {
             to="/"
             className="hover:underline uppercase hover:font-semibold"
           >
-            Home&nbsp;
+            Home
           </Link>
+          <span className="mx-2">/</span>
           <Link
             to="/shop"
             className="hover:underline uppercase hover:font-semibold"
           >
-            /&nbsp;Shop&nbsp;
+            Shop
           </Link>
+          <span className="mx-2">/</span>
           <Link
             to={`/product/${product.brand}`}
-            className="hover:underline uppercase hover:font-semibold"
+            className="underline uppercase font-bold"
           >
-            /&nbsp;{product.brand}
+            {product.brand}
           </Link>
         </div>
 

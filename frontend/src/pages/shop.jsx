@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useGetFilteredProductsQuery } from "../redux/api/productApiSlice";
 import { useFetchCategoriesQuery } from "../redux/api/categoryApiSlice";
+import { GiHamburgerMenu } from "react-icons/gi";
 import {
   setCategories,
   setProducts,
@@ -44,7 +45,8 @@ const Shop = () => {
 
   const [priceFilter, setPriceFilter] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false); // New state for filter menu
+  const [activeFilter, setActiveFilter] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (categoriesError) {
@@ -91,9 +93,9 @@ const Shop = () => {
 
   const handleBrandClick = (brand) => {
     if (brand === "All Brands") {
-      dispatch(setRadio([])); // Clear the brand filter
+      dispatch(setRadio([]));
     } else {
-      dispatch(setRadio([brand])); // Set the radio filter to the selected brand
+      dispatch(setRadio([brand]));
     }
   };
 
@@ -124,147 +126,132 @@ const Shop = () => {
     setSelectedCategory(null);
     dispatch(setChecked([]));
     dispatch(setRadio([]));
-    dispatch(setProducts(filteredProductsData)); // Reset products to unfiltered list
+    dispatch(setProducts(filteredProductsData));
   };
 
   const topLevelCategories = categories?.filter((cat) => !cat.parentId) || [];
   const secondLevelCategories =
     categories?.filter((cat) => cat.parentId === selectedCategory) || [];
 
-  const toggleFilterMenu = () => {
-    setIsFilterMenuOpen((prev) => !prev);
+  const toggleFilter = (filterType) => {
+    setActiveFilter((prev) => (prev === filterType ? null : filterType));
+  };
+
+  const toggleSidebar = () => {
+    setSidebarOpen((prev) => !prev);
   };
 
   return (
-    <div className="container mx-auto">
-      <div className="flex flex-col md:flex-row">
-        {/* Hamburger Button */}
-        <button
-          onClick={toggleFilterMenu}
-          className="md:hidden bg-teal-600 text-white p-2 mt-2 mb-2 rounded"
-        >
-          {isFilterMenuOpen ? "Close Filters" : "Open Filters"}
-        </button>
-
-        {/* Filter Menu */}
-        <div
-          className={`${
-            isFilterMenuOpen ? "block" : "hidden"
-          } md:block bg-teal-600 p-3 mt-2 mb-2 transition-all duration-300 ease-in-out`}
-        >
-          <h2 className="h4 text-center py-2 bg-black text-white rounded-full mb-2">
-            Filter by Categories
-          </h2>
-
-          <div className="p-5 w-[15rem]">
-            {topLevelCategories.map((c) => (
-              <div key={c._id} className="mb-2">
-                <div className="flex items-center mr-4">
-                  <input
-                    type="checkbox"
-                    id={`category-${c._id}`}
-                    onChange={(e) => handleCheck(e.target.checked, c._id)}
-                    className="w-4 h-4 text-pink-600 bg-gray-100 border-gray-300 rounded focus:ring-pink-500 dark:focus:ring-pink-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                  />
-                  <label
-                    htmlFor={`category-${c._id}`}
-                    className={`ml-2 text-sm font-medium ${
-                      selectedCategory === c._id
-                        ? "text-yellow-300"
-                        : "text-white"
-                    } dark:text-gray-300 cursor-pointer`}
-                    onClick={() => setSelectedCategory(c._id)}
-                  >
-                    {c.name}
-                  </label>
-                </div>
-                {selectedCategory === c._id && (
-                  <div className="pl-4">
-                    {secondLevelCategories.map((subCat) => (
-                      <div key={subCat._id} className="mb-2">
-                        <div className="flex items-center mr-4">
-                          <input
-                            type="checkbox"
-                            id={`subcategory-${subCat._id}`}
-                            onChange={(e) =>
-                              handleCheck(e.target.checked, subCat._id)
-                            }
-                            className="w-4 h-4 text-pink-600 bg-gray-100 border-gray-300 rounded focus:ring-pink-500 dark:focus:ring-pink-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                          />
-                          <label
-                            htmlFor={`subcategory-${subCat._id}`}
-                            className="ml-2 text-sm font-medium text-white dark:text-gray-300"
-                          >
-                            {subCat.name}
-                          </label>
-                        </div>
+    <div className="relative">
+  
+      <div
+        className={`fixed  left-[16rem] w-64 bg-gray-800 text-white transform ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } transition-transform duration-300 ease-in-out z-40`}
+      >
+        <div className="p-4">
+          <button
+            onClick={toggleSidebar}
+            className="text-white text-2xl mb-4"
+          >
+            <GiHamburgerMenu />
+          </button>
+          <h3 className="text-lg font-semibold mb-2">Filters</h3>
+          {/* Sidebar content */}
+          <div className="mb-4">
+            <h4 className="text-md font-semibold mb-2">Categories</h4>
+            {topLevelCategories.map((category) => (
+              <div key={category._id}>
+                <input
+                  type="checkbox"
+                  checked={checked.includes(category._id)}
+                  onChange={(e) =>
+                    handleCheck(e.target.checked, category._id)
+                  }
+                />
+                <label className="ml-2">{category.name}</label>
+                {selectedCategory === category._id && secondLevelCategories.length > 0 && (
+                  <div className="ml-4">
+                    {secondLevelCategories.map((subCategory) => (
+                      <div key={subCategory._id}>
+                        <input
+                          type="checkbox"
+                          checked={checked.includes(subCategory._id)}
+                          onChange={(e) =>
+                            handleCheck(e.target.checked, subCategory._id)
+                          }
+                        />
+                        <label className="ml-2">{subCategory.name}</label>
                       </div>
                     ))}
                   </div>
                 )}
-              </div>
-            ))}
-          </div>
-
-          <h2 className="h4 text-center py-2 bg-black text-white rounded-full mb-2">
-            Filter by Brands
-          </h2>
-
-          <div className="p-5">
-            {uniqueBrands?.map((brand) => (
-              <div className="flex items-center mr-4 mb-5" key={brand}>
-                <input
-                  type="radio"
-                  id={`brand-${brand}`}
-                  name="brand"
-                  checked={radio[0] === brand}
-                  onChange={() => handleBrandClick(brand)}
-                  className="w-4 h-4 text-pink-400 bg-gray-100 border-gray-300 focus:ring-pink-500 dark:focus:ring-pink-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                />
-                <label
-                  htmlFor={`brand-${brand}`}
-                  className="ml-2 text-sm font-medium text-white dark:text-gray-300"
+                <button
+                  onClick={() => setSelectedCategory(category._id)}
+                  className="text-blue-500 ml-2"
                 >
-                  {brand}
-                </label>
+                  {selectedCategory === category._id ? "Collapse" : "Expand"}
+                </button>
               </div>
             ))}
           </div>
 
-          <h2 className="h4 text-center py-2 bg-black text-white rounded-full mb-2">
-            Filter by Price
-          </h2>
-
-          <div className="p-5 w-[15rem]">
+          <div className="mb-4">
+            <h4 className="text-md font-semibold mb-2">Price</h4>
             <input
               type="text"
-              placeholder="Enter Price"
               value={priceFilter}
               onChange={handlePriceChange}
-              className="w-full px-3 py-2 placeholder-gray-400 border rounded-lg focus:outline-none focus:ring focus:border-pink-300"
+              className="w-full p-2 border border-gray-300 rounded"
+              placeholder="Filter by price"
             />
           </div>
 
-          <div className="p-5 pt-0">
-            <button className="w-full border my-4" onClick={handleReset}>
-              Reset
-            </button>
+          <div className="mb-4">
+            <h4 className="text-md font-semibold mb-2">Brands</h4>
+            {uniqueBrands.map((brand) => (
+              <div key={brand}>
+                <button
+                  onClick={() => handleBrandClick(brand)}
+                  className={`text-sm ${
+                    radio[0] === brand ? "font-bold" : "font-normal"
+                  }`}
+                >
+                  {brand}
+                </button>
+              </div>
+            ))}
           </div>
+
+          <button
+            onClick={handleReset}
+            className="w-full bg-red-500 text-white py-2 rounded"
+          >
+            Reset Filters
+          </button>
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div className={`ml-0 md:ml-64 transition-all duration-300 ease-in-out ${sidebarOpen ? "ml-64" : ""}`}>
+        <div className="flex justify-center mb-4">
+          <button onClick={toggleSidebar} className="md:hidden text-2xl">
+            <GiHamburgerMenu />
+          </button>
         </div>
 
-        {/* Products Section */}
-        <div className="p-3">
-          <h2 className="h4 text-center mb-2">{products?.length} Products</h2>
-          <div className="flex flex-wrap">
-            {products.length === 0 ? (
-              <Loader />
-            ) : (
-              products?.map((p) => (
-                <div className="p-3" key={p._id}>
-                  <ProductCard p={p} />
-                </div>
-              ))
-            )}
+        <div className="flex flex-col md:flex-row">
+          <div className="md:w-3/4">
+            <h2 className="text-2xl font-bold text-center mb-4">
+              {products?.length} Products
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {products.length === 0 ? (
+                <Loader />
+              ) : (
+                products?.map((p) => <ProductCard key={p._id} p={p} />)
+              )}
+            </div>
           </div>
         </div>
       </div>

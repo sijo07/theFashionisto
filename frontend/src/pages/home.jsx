@@ -23,7 +23,7 @@ const Home = () => {
           <div className="w-full bg-gray-50">
             <div className="flex items-center justify-start">
               <h1 className="flex items-center m-4 h-10 text-1xl lg:text-2xl text-[#649899] font-bold uppercase tracking-wider">
-                featured products{" "}
+                featured products
                 <svg
                   className="w-10 h-5 ml-6"
                   aria-hidden="true"
@@ -42,7 +42,7 @@ const Home = () => {
               </h1>
             </div>
             <div className="max-w-screen-xl mx-auto py-2 flex md:text-left">
-              <div className="grid lg:grid-cols-4 gap-10">
+              <div className="grid lg:grid-cols-5 gap-10">
                 {data.products.map((product) => (
                   <div key={product._id}>
                     <Product product={product} />

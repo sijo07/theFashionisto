@@ -1,21 +1,109 @@
-import { useSelector } from "react-redux";
-import { selectFavoriteProduct } from "../../redux/features/favorites/favoriteSlice";
-import Product from "./product";
+import { useSelector, useDispatch } from "react-redux";
+import { Link } from "react-router-dom";
+import {
+  selectFavoriteProduct,
+  removeFromFavorites,
+} from "../../redux/features/favorites/favoriteSlice";
+import HeartIcon from "./HeartIcon";
+import CartIcon from "./CartIcon";
+import { addToCart } from "../../redux/features/cart/cartSlice";
+import { toast } from "react-toastify";
 
 const Favorites = () => {
   const favorites = useSelector(selectFavoriteProduct);
+  const dispatch = useDispatch();
+
+  const addToCartHandler = (product, qty = 1) => {
+    dispatch(addToCart({ ...product, qty }));
+    dispatch(removeFromFavorites({ _id: product._id }));
+    toast.success("Item added to cart");
+  };
 
   return (
-    <div className="container">
-      <h1 className="flex items-center m-4 h-10 text-1xl lg:text-2xl text-[#649899] font-bold uppercase tracking-wider">
-        FAVORITE PRODUCTS
-      </h1>
-      <div className="max-w-screen-xl relative mx-auto text-center md:text-left w-[70rem]">
-        <div className="grid lg:grid-cols-4 gap-10">
-          {favorites.map((product) => (
-            <Product key={product._id} product={product} />
-          ))}
-        </div>
+    <div className="bg-gray-50 py-10 min-h-screen">
+      {/* Breadcrumb Navigation */}
+      <nav className="container mx-auto px-4 text-sm text-gray-500 py-4">
+        <Link to="/" className="hover:underline">
+          Home
+        </Link>
+        <span className="mx-2">/</span>
+        <Link to="/shop" className="hover:underline">
+          Shop
+        </Link>
+        <span className="mx-2">/</span>
+        <span className="font-semibold text-gray-700">Favorites</span>
+      </nav>
+
+      <div className="container mx-auto px-4">
+        <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center uppercase tracking-wide">
+          Your Favorite Products
+        </h1>
+
+        {favorites.length > 0 ? (
+          <div className="grid gap-8 lg:grid-cols-3 md:grid-cols-2 grid-cols-1">
+            {favorites.map((product) => (
+              <div
+                key={product._id}
+                className="relative bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200 flex flex-col"
+              >
+                <div className="relative">
+                  <Link to={`/product/${product.id}`}>
+                    <img
+                      className="w-full h-64 object-cover"
+                      src={product.image}
+                      alt={product.name}
+                    />
+                  </Link>
+                  <div className="absolute top-4 right-4 flex space-x-2">
+                    <HeartIcon product={product} />
+                  </div>
+                </div>
+                <div className="flex flex-col justify-between flex-1 p-6">
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900 mb-2 truncate capitalize">
+                      {product.name}
+                    </h2>
+                    <p className="text-gray-500 text-sm mb-4 capitalize">
+                      {product.brand}
+                    </p>
+                    <div className="text-lg font-bold text-gray-900">
+                      {product.price?.toLocaleString("en-IN", {
+                        style: "currency",
+                        currency: "INR",
+                      })}
+                      {product.cutPrice && (
+                        <span className="line-through text-gray-400 text-sm ml-2">
+                          {product.cutPrice?.toLocaleString("en-IN", {
+                            style: "currency",
+                            currency: "INR",
+                          })}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => addToCartHandler(product)}
+                    className="mt-6 bg-[#649899] text-white text-center py-2 rounded-lg uppercase tracking-wider hover:bg-[#558080] transition-colors duration-200"
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-10">
+            <p className="text-xl text-gray-500 mb-4">
+              You haven’t added any products to your favorites yet.
+            </p>
+            <Link
+              to="/shop"
+              className="text-[#649899] text-sm uppercase hover:underline"
+            >
+              Browse products to find your favorites.
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

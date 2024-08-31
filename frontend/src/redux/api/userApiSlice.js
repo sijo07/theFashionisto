@@ -5,6 +5,7 @@ export const userApiSlice = createApi({
   reducerPath: "userApi",
   baseQuery: fetchBaseQuery({ baseUrl: USERS_URL }),
   endpoints: (builder) => ({
+    
     login: builder.mutation({
       query: (data) => ({
         url: `/auth`,
@@ -69,6 +70,10 @@ export const userApiSlice = createApi({
       }),
       invalidatesTags: ["User"],
     }),
+
+    getUserReviewedProducts: builder.query({
+      query: () => `/user/reviewed-products`,
+    }),
   }),
 });
 
@@ -82,4 +87,5 @@ export const {
   useGetUserDetailsQuery,
   useUpdateUserMutation,
   useChangePasswordMutation,
+  useGetUserReviewedProductsQuery,
 } = userApiSlice;

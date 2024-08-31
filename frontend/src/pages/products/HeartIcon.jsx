@@ -6,7 +6,6 @@ import {
   removeFromFavorites,
   setFavorites,
 } from "../../redux/features/favorites/favoriteSlice";
-
 import {
   addFavoriteToLocalStorage,
   getFavoritesFromLocalStorage,
@@ -21,7 +20,7 @@ const HeartIcon = ({ product }) => {
   useEffect(() => {
     const favoritesFromLocalStorage = getFavoritesFromLocalStorage();
     dispatch(setFavorites(favoritesFromLocalStorage));
-  }, []);
+  }, [dispatch]);
 
   const toggleFavorites = () => {
     if (isFavorite) {
@@ -29,20 +28,25 @@ const HeartIcon = ({ product }) => {
       removeFavoriteFromLocalStorage(product._id);
     } else {
       dispatch(addToFavorites(product));
-
       addFavoriteToLocalStorage(product);
     }
   };
 
   return (
     <div
-      className="absolute top-0 right-0 p-1 cursor-pointer bg-white"
+      className="flex items-center justify-center m-6 border border-gray-300 cursor-pointer w-[5rem] h-[2rem]"
       onClick={toggleFavorites}
     >
       {isFavorite ? (
-        <FaHeart className="text-[#FF4B55] m-1 text-md" />
+        <>
+          <FaHeart className="text-[#FF4B55]" />
+          <span className="text-sm ml-1">Liked</span>
+        </>
       ) : (
-        <FaRegHeart className=" m-1 text-md" />
+        <>
+          <FaRegHeart className="text-gray-500" />
+          <span className="text-sm ml-1 text-gray-600">Like</span>
+        </>
       )}
     </div>
   );

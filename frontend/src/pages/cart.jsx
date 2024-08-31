@@ -23,15 +23,20 @@ const Cart = () => {
     navigate("/login?redirect=/shipping");
   };
 
-  const totalMRP = cartItems.reduce(
-    (acc, item) => acc + item.cutPrice * item.qty,
-    0
-  );
-  const totalDiscount = cartItems.reduce(
-    (acc, item) => acc + (item.cutPrice - item.price) * item.qty,
-    0
-  );
-  const totalAmount = totalMRP - totalDiscount;
+const totalMRP = cartItems.reduce(
+  (acc, item) => acc + (Number(item.cutPrice) || 0) * (Number(item.qty) || 1), 
+  0
+);
+
+const totalDiscount = cartItems.reduce(
+  (acc, item) =>
+    acc +
+    (Number(item.cutPrice) - Number(item.price)) * (Number(item.qty) || 1), 
+  0
+);
+
+const totalAmount = totalMRP - totalDiscount;
+
 
   return (
     <div className="p-4 max-w-4xl mx-auto">
@@ -63,26 +68,32 @@ const Cart = () => {
                   <p className="font-bold">{item.brand}</p>
                   <p className="text-sm text-gray-600">{item.description}</p>
                   <div className="flex items-center mt-2 space-x-4">
-                    <div>
-                      <label className="text-sm font-semibold">Qty:</label>
-                      <select
-                        className="border rounded px-2 py-1 ml-2"
-                        value={item.qty}
-                        onChange={(e) =>
-                          addToCartHandler(item, Number(e.target.value))
-                        }
-                      >
-                        {[...Array(item.countInStock).keys()].map((x) => (
-                          <option key={x + 1} value={x + 1}>
-                            {x + 1}
-                          </option>
-                        ))}
-                      </select>
+                    <div className="flex items-center space-x-2">
+                      <label className="text-sm font-semibold text-gray-700">
+                        Qty:
+                      </label>
+                      <div className="relative inline-block">
+                        <select
+                          className="border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-800 appearance-none text-center leading-6 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition duration-200 ease-in-out"
+                          value={item.qty}
+                          onChange={(e) =>
+                            addToCartHandler(item, Number(e.target.value))
+                          }
+                        >
+                          {[
+                            ...Array(Math.min(item.countInStock, 10)).keys(),
+                          ].map((x) => (
+                            <option key={x + 1} value={x + 1}>
+                              {x + 1}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center mt-2 space-x-4">
                     <div>
-                      <p className="text-lg font-semibold text-pink-500">
+                      <p className="text-lg font-semibold text-teal-500">
                         ₹{item.price}
                       </p>
                     </div>
@@ -111,17 +122,17 @@ const Cart = () => {
               </p>
               <div className="flex justify-between mb-2">
                 <p className="text-sm">Total MRP</p>
-                <p className="text-sm font-semibold">₹{totalMRP}</p>
+                <p className="text-sm font-semibold">₹{totalMRP.toFixed(2)}</p>
               </div>
               <div className="flex justify-between mb-2">
                 <p className="text-sm">Discount on MRP</p>
                 <p className="text-sm font-semibold text-green-500">
-                  - ₹{totalDiscount}
+                  - ₹{totalDiscount.toFixed(2)}
                 </p>
               </div>
               <div className="flex justify-between font-bold text-lg mb-4">
                 <p>Total Amount</p>
-                <p>₹{totalAmount}</p>
+                <p>₹{totalAmount.toFixed(2)}</p>
               </div>
               <button
                 className="bg-[#649899] hover:bg-green-700 text-white w-full py-2 rounded font-bold uppercase"

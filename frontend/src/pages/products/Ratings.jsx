@@ -1,6 +1,6 @@
 import { FaRegStar, FaStar, FaStarHalfAlt } from "react-icons/fa";
 
-const Ratings = ({ value, text, size, className }) => {
+const Ratings = ({ value = 0, text, size = "20px", className = "" }) => {
   const safeValue = Math.min(Math.max(Number(value), 0), 5);
 
   const fullStars = Math.floor(safeValue);
@@ -8,11 +8,11 @@ const Ratings = ({ value, text, size, className }) => {
   const emptyStars = 5 - fullStars - halfStars;
 
   const getColor = (index) => {
-    if (index < 1) return "#ff4545"; 
-    if (index < 2) return "#ffa534"; 
+    if (index < 1) return "#ff4545";
+    if (index < 2) return "#ffa534";
     if (index < 3) return "#ffe234";
-    if (index < 4) return "#b7dd29"; 
-    return "#57e32c"; 
+    if (index < 4) return "#b7dd29";
+    return "#57e32c";
   };
 
   return (
@@ -64,11 +64,6 @@ const Ratings = ({ value, text, size, className }) => {
       </span>
     </div>
   );
-};
-
-Ratings.defaultProps = {
-  size: "20px",
-  className: "",
 };
 
 export default Ratings;

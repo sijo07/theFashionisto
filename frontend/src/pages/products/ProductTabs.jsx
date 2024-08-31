@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import StarRating from "./starRating";
 import Ratings from "./ratings";
 import Capsule from "./Capsule";
 import Loader from "../../components/Loader";
 import { useGetTopProductsQuery } from "../../redux/api/productApiSlice";
+import { useGetUserReviewedProductsQuery } from "../../redux/api/userApiSlice";
 
 const ProductTabs = ({
   loadingProductReview,
@@ -17,11 +18,24 @@ const ProductTabs = ({
   product,
   hasReviewed,
 }) => {
-  const { data, isLoading } = useGetTopProductsQuery();
+  const { data: topProducts, isLoading: isLoadingTopProducts } =
+    useGetTopProductsQuery();
+  const { data: reviewedProducts, isLoading: isLoadingReviewedProducts } =
+    useGetUserReviewedProductsQuery();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(1);
+  const [hasUserReviewed, setHasUserReviewed] = useState(false);
 
-  if (isLoading) return <Loader />;
+  useEffect(() => {
+    if (userInfo && reviewedProducts && product) {
+      const userReviewed = reviewedProducts.some(
+        (reviewedProduct) => reviewedProduct._id === product._id
+      );
+      setHasUserReviewed(userReviewed);
+    }
+  }, [userInfo, reviewedProducts, product]);
+
+  if (isLoadingTopProducts || isLoadingReviewedProducts) return <Loader />;
 
   const handleTabClick = (tabNumber) => {
     setActiveTab(tabNumber);
@@ -75,7 +89,7 @@ const ProductTabs = ({
                         {review.createdAt.substring(0, 10)}
                       </p>
                     </div>
-                    <p className="mb-2">{review.comment}</p>
+                    <p className="mb-1">{review.comment}</p>
                     <Ratings
                       value={review.rating}
                       size="20px"
@@ -90,7 +104,7 @@ const ProductTabs = ({
           {activeTab === 2 && (
             <div className="mt-4">
               {userInfo ? (
-                hasReviewed ? (
+                hasUserReviewed ? (
                   <p className="text-teal-800 font-semibold">
                     You have already submitted a review for this product.
                   </p>
@@ -135,10 +149,10 @@ const ProductTabs = ({
                 )
               ) : (
                 <p className="text-gray-600">
-                  Please{" "}
+                  Please
                   <Link to="/login" className="text-[#649899] hover:underline">
                     sign in
-                  </Link>{" "}
+                  </Link>
                   to write a review
                 </p>
               )}
@@ -147,7 +161,7 @@ const ProductTabs = ({
 
           {activeTab === 3 && (
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {data?.map((prod) => (
+              {topProducts?.map((prod) => (
                 <div
                   key={prod._id}
                   className="cursor-pointer"
