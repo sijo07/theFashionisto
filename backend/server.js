@@ -42,17 +42,13 @@ app.use(cors({
     if (origin === allowedOrigin || origin === "http://localhost:5173") {
       callback(null, true);
     } else {
-      // For debugging Vercel issues, we can log this mismatch
-      console.log(`CORS: Origin ${origin} not explicitly allowed. Expected: ${allowedOrigin}`);
-      // Fallback: If we really want to allow it (e.g. preview deployments), we could echo it back
-      // But for security, let's stick to the env var. 
-      // Failsafe: Just allow it for now to get it working? No, strict is better for cookies.
-      // Let's allow if it matches the Vercel app pattern?
+      // Debugging info
+      // console.log("Blocked Origin:", origin);
+      // Allow vercel deployments
       if (origin.endsWith(".vercel.app")) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
+        return callback(null, true);
       }
+      callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
@@ -62,12 +58,28 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// ---------------- Database Check Middleware ----------------
+// Ensures DB is connected before processing request (Vital for Serverless Cold Starts)
+app.use(async (req, res, next) => {
+  if (mongoose.connection.readyState !== 1) {
+    try {
+      await connectDB();
+      // Initialize GridFS if needed, though initGridFS logic handles its own checks
+      initGridFS();
+    } catch (error) {
+      console.error("DB Connection Failed in Middleware:", error);
+      return res.status(500).json({ error: "Database Connection Failed" });
+    }
+  }
+  next();
+});
+
 // ---------------- Security Middleware ----------------
 configureMiddleware(app);  // helmet, cors, limiter
 
 // ---------------- Static Files ----------------
 const __dirname = path.resolve();
-app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
+// app.use("/uploads", express.static(path.join(__dirname, "/uploads"))); // Disabled for Vercel (Use GridFS or Cloudinary)
 
 // ---------------- API Routes ----------------
 app.use("/api/users", userRoutes);
