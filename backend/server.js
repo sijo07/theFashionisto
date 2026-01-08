@@ -25,12 +25,35 @@ const app = express();
 // We call it but don't await at top level for serverless cold-start efficiency
 // connectDB() handles its own internal checks or connection pooling via mongoose
 connectDB().then(() => {
-  // initGridFS();
+  initGridFS();
 });
 
 // ---------------- Core Middleware ----------------
 app.use(cors({
-  origin: process.env.CLIENT_URL || "*",
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    // During development or if CLIENT_URL is not set, we might want to be permissive
+    // But for production with credentials: true, we must return the specific origin, not unique "*"
+    const allowedOrigin = process.env.CLIENT_URL || "http://localhost:5173";
+
+    if (origin === allowedOrigin || origin === "http://localhost:5173") {
+      callback(null, true);
+    } else {
+      // For debugging Vercel issues, we can log this mismatch
+      console.log(`CORS: Origin ${origin} not explicitly allowed. Expected: ${allowedOrigin}`);
+      // Fallback: If we really want to allow it (e.g. preview deployments), we could echo it back
+      // But for security, let's stick to the env var. 
+      // Failsafe: Just allow it for now to get it working? No, strict is better for cookies.
+      // Let's allow if it matches the Vercel app pattern?
+      if (origin.endsWith(".vercel.app")) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    }
+  },
   credentials: true,
 }));
 
