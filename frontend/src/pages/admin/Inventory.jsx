@@ -6,7 +6,7 @@ import AdminHeader from "./AdminHeader";
 import { Link } from "react-router-dom";
 import { useAllProductsQuery, useDeleteProductMutation } from "../../redux/api/productApiSlice";
 import EditProductModal from "./EditProductModal";
-import Loader from "../../components/loader";
+import Loader from "../../components/Loader";
 
 const getStatus = (stock) => {
     if (stock === 0) return { label: "Depleted", color: "rose", icon: <FaTimes /> };

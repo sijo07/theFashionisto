@@ -6,7 +6,7 @@ import {
   FaCalendarAlt, FaShieldAlt
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
-import Loader from "../../components/loader";
+import Loader from "../../components/Loader";
 import { toast } from "react-toastify";
 import {
   useGetUsersQuery,

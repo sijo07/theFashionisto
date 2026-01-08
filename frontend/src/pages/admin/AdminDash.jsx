@@ -8,7 +8,7 @@ import {
 } from "../../redux/api/orderApiSlice";
 import { useAllProductsQuery } from "../../redux/api/productApiSlice";
 import AdminHeader from "./AdminHeader";
-import Loader from "../../components/loader";
+import Loader from "../../components/Loader";
 import {
   FaArrowUp, FaArrowDown, FaDollarSign, FaUser, FaBox, FaShoppingCart,
   FaChartLine, FaChartPie, FaChartBar

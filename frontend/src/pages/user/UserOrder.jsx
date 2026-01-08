@@ -1,5 +1,5 @@
-import Message from "../../components/message";
-import Loader from "../../components/loader";
+import Message from "../../components/Message";
+import Loader from "../../components/Loader";
 import { Link } from "react-router-dom";
 import { useGetMyOrdersQuery } from "../../redux/api/orderApiSlice";
 

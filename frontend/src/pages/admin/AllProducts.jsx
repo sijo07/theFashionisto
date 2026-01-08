@@ -10,7 +10,7 @@ import {
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 import AdminHeader from "./AdminHeader";
-import Loader from "../../components/loader";
+import Loader from "../../components/Loader";
 
 const AllProducts = () => {
   const { data: products, isLoading, isError, refetch } = useAllProductsQuery();
