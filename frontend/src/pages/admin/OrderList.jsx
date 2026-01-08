@@ -9,7 +9,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
 import Loader from "../../components/Loader";
-import Message from "../../components/message";
+import Message from "../../components/Message";
 import AdminHeader from "./AdminHeader";
 import {
   useGetOrdersQuery,
