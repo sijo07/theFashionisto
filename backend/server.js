@@ -60,6 +60,10 @@ app.get("/", (req, res) => {
   res.send("API is running...");
 });
 
+app.get("/api/test", (req, res) => {
+  res.json({ status: "ok", message: "Backend is reachable" });
+});
+
 // ---------------- Global Error Handler ----------------
 app.use(errorHandler);
 
