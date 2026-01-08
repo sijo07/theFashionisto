@@ -38,7 +38,6 @@ connectDB().then(async () => {
   app.use(cookieParser());
 
   // ---------------- Security Middleware ----------------
-  app.use(rateLimiter);
   configureMiddleware(app);  // helmet, cors, limiter
 
   // ---------------- Static Files ----------------

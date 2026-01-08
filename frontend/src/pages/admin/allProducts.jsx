@@ -1,349 +1,158 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import moment from "moment";
-import { useAllProductsQuery, useDeleteProductMutation, useUpdateProductMutation } from "../../redux/api/productApiSlice";
-import { useFetchCategoriesQuery } from "../../redux/api/categoryApiSlice";
-import { FaSearch, FaPlus, FaFilter, FaThLarge, FaList, FaStar, FaEdit, FaTrash, FaEllipsisH } from "react-icons/fa";
+import {
+  useAllProductsQuery,
+  useDeleteProductMutation,
+} from "../../redux/api/productApiSlice";
+import {
+  FaSearch, FaPlus, FaThLarge, FaList,
+  FaEdit, FaTrash, FaEye, FaBox
+} from "react-icons/fa";
 import { toast } from "react-toastify";
 import AdminHeader from "./AdminHeader";
-import EditProductModal from "./EditProductModal";
+import Loader from "../../components/loader";
 
 const AllProducts = () => {
-  const { data: products, isLoading: isLoadingProducts, isError, refetch } = useAllProductsQuery();
-  const { data: categories, isLoading: isLoadingCategories } = useFetchCategoriesQuery();
+  const { data: products, isLoading, isError, refetch } = useAllProductsQuery();
   const [deleteProduct] = useDeleteProductMutation();
-  const [updateProduct] = useUpdateProductMutation();
-
-  const [view, setView] = useState("grid");
   const [searchTerm, setSearchTerm] = useState("");
-
-  // Menu & Modal State
-  const [activeMenu, setActiveMenu] = useState(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-
-  const toggleActionMenu = (id) => {
-    setActiveMenu(activeMenu === id ? null : id);
-  };
-
-  const openEditModal = (product) => {
-    setSelectedProduct(product);
-    setIsEditModalOpen(true);
-    setActiveMenu(null);
-  };
-
-  const handleToggleFeatured = async (product) => {
-    try {
-      const formData = new FormData();
-      formData.append("isFeatured", !product.isFeatured);
-
-      formData.append("name", product.name);
-      formData.append("brand", product.brand);
-      formData.append("description", product.description);
-      formData.append("price", product.price);
-      formData.append("category", product.category._id || product.category);
-      formData.append("sizes", JSON.stringify(product.sizes || []));
-      formData.append("quantity", product.countInStock);
-      if (product.image) formData.append("image", product.image);
-
-      await updateProduct({
-        productId: product._id,
-        formData
-      }).unwrap();
-
-      toast.success(product.isFeatured ? "Removed from Featured" : "Marked as Featured");
-      setActiveMenu(null);
-      refetch();
-    } catch (err) {
-      toast.error("Failed to update status");
-      console.error(err);
-    }
-  };
-
-  // 3-Level Filter State
-  const [selectedSuper, setSelectedSuper] = useState("");
-  const [selectedMain, setSelectedMain] = useState("");
-  const [selectedSub, setSelectedSub] = useState("");
-
-  if (isLoadingProducts || isLoadingCategories) return <div className="text-center p-10 font-display">Loading Catalog...</div>;
-  if (isError) return <div className="text-center p-10 text-red-500 font-display">Error loading catalog</div>;
-
-  // --- Category Hierarchy Logic ---
-  const superCategories = categories?.filter(c => !c.parent) || [];
-  const mainCategories = selectedSuper ? categories?.filter(c => c.parent === selectedSuper) : [];
-  const subCategories = selectedMain ? categories?.filter(c => c.parent === selectedMain) : [];
-
-  const getCategoryPath = (catId) => {
-    if (!catId) return { super: '', main: '', sub: '' };
-    const sub = categories?.find(c => c._id === catId || c._id === catId._id);
-    if (!sub) return { super: '', main: '', sub: '' };
-
-    if (!sub.parent) return { super: sub._id, main: '', sub: '' };
-
-    const parent = categories?.find(c => c._id === sub.parent);
-    if (!parent) return { super: '', main: '', sub: '' };
-
-    if (!parent.parent) {
-      return { super: parent._id, main: sub._id, sub: '' };
-    }
-
-    const grandParent = categories?.find(c => c._id === parent.parent);
-    return { super: grandParent?._id || '', main: parent._id, sub: sub._id };
-  };
-
-  const filteredProducts = products?.filter(product => {
-    // 1. Search Filter
-    const matchesSearch = product?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product?.description?.toLowerCase().includes(searchTerm.toLowerCase());
-
-    // 2. Category Filter
-    const prodCatId = product.category?._id || product.category;
-    const { super: pSuper, main: pMain, sub: pSub } = getCategoryPath(prodCatId);
-
-    let matchesCategory = true;
-    if (selectedSuper) {
-      matchesCategory = matchesCategory && (pSuper === selectedSuper);
-    }
-    if (selectedMain) {
-      matchesCategory = matchesCategory && (pMain === selectedMain);
-    }
-    if (selectedSub) {
-      matchesCategory = matchesCategory && (pSub === selectedSub);
-    }
-
-    return matchesSearch && matchesCategory;
-  }) || [];
+  const [viewMode, setViewMode] = useState("list"); // 'list' or 'grid'
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
       try {
         await deleteProduct(id).unwrap();
-        toast.success("Product deleted successfully");
+        toast.success("Product deleted.");
         refetch();
       } catch (err) {
-        toast.error(err?.data?.message || err.error);
+        toast.error("Delete failed.");
       }
     }
   };
 
-  // Reset dependent filters
-  const handleSuperChange = (e) => {
-    setSelectedSuper(e.target.value);
-    setSelectedMain("");
-    setSelectedSub("");
-  };
-  const handleMainChange = (e) => {
-    setSelectedMain(e.target.value);
-    setSelectedSub("");
-  };
+  const filteredProducts = products?.filter(p =>
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.brand.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  const baseSelectClass = "pl-3 pr-8 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold/20 focus:border-gold cursor-pointer min-w-[140px]";
-  const disabledClass = "opacity-50 cursor-not-allowed";
+  if (isLoading) return <div className="min-h-screen bg-black flex items-center justify-center"><Loader /></div>;
+  if (isError) return <div className="text-red-500 p-10">Error loading products</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50/50 font-sans text-gray-900 pb-20">
-      <AdminHeader title="Products" subtitle="Manage your product catalog">
-        {/* Actions Bar Content passed to Header */}
-        <div className="flex flex-col xl:flex-row gap-4 w-full xl:w-auto items-start xl:items-center">
-          {/* Search */}
-          <div className="relative group w-full md:w-64">
-            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-gold transition-colors" />
+    <div className="min-h-screen bg-black font-sans text-white pb-20">
+      <AdminHeader title="Product Catalog" subtitle={`Total Products: ${products.length}`}>
+        <Link to="/admin/productlist" className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 text-xs font-bold uppercase tracking-wider flex items-center gap-2 rounded-sm transition-all">
+          <FaPlus /> Add New
+        </Link>
+      </AdminHeader>
+
+      <div className="p-6 lg:p-8 max-w-[1600px] mx-auto">
+
+        {/* Toolbar */}
+        <div className="flex flex-col md:flex-row justify-between items-center bg-zinc-900 border border-zinc-800 p-4 mb-8 gap-4 rounded-sm">
+          <div className="relative w-full md:w-96">
+            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" />
             <input
-              type="text"
-              placeholder="Search products..."
-              className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold/20 focus:border-gold transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-black border border-zinc-700 pl-10 pr-4 py-2 text-sm text-white focus:border-red-600 focus:outline-none placeholder:text-zinc-600"
+              placeholder="Search by name, brand..."
             />
           </div>
 
-          {/* 3-Level Filter Group */}
-          <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
-            {/* Super Filter */}
-            <select
-              className={baseSelectClass}
-              value={selectedSuper}
-              onChange={handleSuperChange}
-            >
-              <option value="">All Departments</option>
-              {superCategories.map(cat => (
-                <option key={cat._id} value={cat._id}>{cat.name}</option>
-              ))}
-            </select>
-
-            {/* Main Filter (Conditional) */}
-            <select
-              className={`${baseSelectClass} transition-opacity ${!selectedSuper ? disabledClass : ''}`}
-              value={selectedMain}
-              onChange={handleMainChange}
-              disabled={!selectedSuper}
-            >
-              <option value="">All Categories</option>
-              {mainCategories.map(cat => (
-                <option key={cat._id} value={cat._id}>{cat.name}</option>
-              ))}
-            </select>
-
-            {/* Sub Filter (Conditional) */}
-            <select
-              className={`${baseSelectClass} transition-opacity ${!selectedMain ? disabledClass : ''}`}
-              value={selectedSub}
-              onChange={(e) => setSelectedSub(e.target.value)}
-              disabled={!selectedMain}
-            >
-              <option value="">All Sub-Cats</option>
-              {subCategories.map(cat => (
-                <option key={cat._id} value={cat._id}>{cat.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* View Toggle */}
-          <div className="flex bg-white border border-gray-200 rounded-lg p-1 gap-1">
+          <div className="flex items-center gap-2">
             <button
-              onClick={() => setView("grid")}
-              className={`p-2 rounded-md transition-all ${view === 'grid' ? 'bg-gold/10 text-gold' : 'text-gray-400 hover:text-gray-600'}`}
-              title="Grid View"
-            >
-              <FaThLarge />
-            </button>
-            <button
-              onClick={() => setView("list")}
-              className={`p-2 rounded-md transition-all ${view === 'list' ? 'bg-gold/10 text-gold' : 'text-gray-400 hover:text-gray-600'}`}
-              title="List View"
+              onClick={() => setViewMode("list")}
+              className={`p-2 rounded-sm transition-colors ${viewMode === 'list' ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:text-white'}`}
             >
               <FaList />
             </button>
+            <button
+              onClick={() => setViewMode("grid")}
+              className={`p-2 rounded-sm transition-colors ${viewMode === 'grid' ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:text-white'}`}
+            >
+              <FaThLarge />
+            </button>
           </div>
-
-          {/* Add Product Button */}
-          <Link
-            to="/admin/productlist"
-            className="flex items-center gap-2 bg-gradient-to-r from-gold to-gold-dark text-white px-4 py-2 rounded-lg font-bold shadow-lg shadow-gold/30 hover:shadow-xl hover:scale-105 transition-all text-sm whitespace-nowrap"
-          >
-            <FaPlus className="text-xs" /> Add Product
-          </Link>
         </div>
-      </AdminHeader>
 
-      <div className="p-8 max-w-[1600px] mx-auto">
-        {filteredProducts.length === 0 ? (
-          <div className="text-center py-20 text-gray-400">
-            <p>No products found matching filters.</p>
+        {/* Content View */}
+        {viewMode === "list" ? (
+          <div className="overflow-x-auto border border-zinc-800 rounded-sm">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-zinc-900 text-xs font-bold uppercase tracking-wider text-zinc-400 border-b border-zinc-800">
+                  <th className="p-4">Product</th>
+                  <th className="p-4">Brand</th>
+                  <th className="p-4">Category</th>
+                  <th className="p-4">Price</th>
+                  <th className="p-4">Stock</th>
+                  <th className="p-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-800 bg-black">
+                {filteredProducts?.map((product) => (
+                  <tr key={product._id} className="hover:bg-zinc-900/50 transition-colors group">
+                    <td className="p-4">
+                      <div className="flex items-center gap-4">
+                        <img src={product.image} className="w-12 h-16 object-cover bg-zinc-800 border border-zinc-700" />
+                        <div className="max-w-[200px]">
+                          <p className="text-sm font-bold text-white truncate">{product.name}</p>
+                          <p className="text-[10px] text-zinc-400">ID: {product._id.substring(0, 8)}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-4 text-sm font-medium text-zinc-300">{product.brand}</td>
+                    <td className="p-4 text-sm text-zinc-400">
+                      <span className="bg-zinc-900 border border-zinc-700 px-2 py-1 rounded text-[10px] font-bold uppercase">
+                        {/* Safe access for category */}
+                        {product.category?.name || "Unassigned"}
+                      </span>
+                    </td>
+                    <td className="p-4 font-bold text-white">₹{product.price}</td>
+                    <td className="p-4">
+                      {product.countInStock < 10 ? (
+                        <span className="text-red-500 font-bold text-xs flex items-center gap-1"><FaBox /> {product.countInStock} (Low)</span>
+                      ) : (
+                        <span className="text-emerald-500 font-bold text-xs flex items-center gap-1"><FaBox /> {product.countInStock}</span>
+                      )}
+                    </td>
+                    <td className="p-4 text-right">
+                      <div className="flex items-center justify-end gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
+                        <Link to={`/admin/product/update/${product._id}`} className="p-2 bg-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-700 rounded-sm">
+                          <FaEdit size={14} />
+                        </Link>
+                        <button onClick={() => handleDelete(product._id)} className="p-2 bg-zinc-800 text-red-500 hover:bg-red-900/30 rounded-sm">
+                          <FaTrash size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         ) : (
-          <div className={`grid gap-6 ${view === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
-            {filteredProducts.map((product, index) => (
-              <div
-                key={product._id}
-                className={`group bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-gold/5 transition-all duration-300 overflow-visible relative ${view === 'list' ? 'flex items-center gap-6 p-4' : 'flex flex-col'}`}
-              >
-                {/* Image Area */}
-                <div className={`relative overflow-hidden ${view === 'list' ? 'h-24 w-24 rounded-lg flex-shrink-0' : 'h-64 w-full bg-gray-50 rounded-t-xl'}`}>
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-                  />
-                  {view === 'grid' && (
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  )}
-
-                  {/* Featured Badge */}
-                  <div className="absolute top-3 left-3">
-                    {product.isFeatured && (
-                      <span className="flex items-center gap-1 bg-gold/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm">
-                        <FaStar className="text-[10px]" /> Featured
-                      </span>
-                    )}
-                  </div>
-                  {/* Product ID Badge */}
-                  <div className="absolute top-3 right-3">
-                    {product.productId && (
-                      <span className="bg-black/60 backdrop-blur-md text-white text-[10px] font-mono px-2 py-1 rounded-md border border-white/10 shadow-sm">
-                        {product.productId}
-                      </span>
-                    )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            {filteredProducts?.map((product) => (
+              <div key={product._id} className="bg-zinc-900 border border-zinc-800 group hover:border-red-600/50 transition-all">
+                <div className="relative aspect-[3/4] overflow-hidden">
+                  <img src={product.image} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+                  <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Link to={`/admin/product/update/${product._id}`} className="p-2 bg-black text-white hover:bg-red-600 transition-colors">
+                      <FaEdit size={12} />
+                    </Link>
+                    <button onClick={() => handleDelete(product._id)} className="p-2 bg-black text-white hover:bg-red-600 transition-colors">
+                      <FaTrash size={12} />
+                    </button>
                   </div>
                 </div>
-
-                {/* Content Area */}
-                <div className={`flex flex-col ${view === 'list' ? 'flex-1' : 'p-5 flex-1'}`}>
-                  <div className="flex justify-between items-start mb-2 relative">
-                    <div className="flex-1 pr-6">
-                      <h3 className="font-display font-bold text-gray-900 text-lg leading-tight mb-1 group-hover:text-gold-dark transition-colors line-clamp-1">
-                        {product.name}
-                      </h3>
-                      <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">
-                      </p>
-                    </div>
-
-                    {/* 3-Dot Menu (Details Area) */}
-                    <div className="relative">
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          toggleActionMenu(product._id);
-                        }}
-                        className="p-2 -mr-2 text-gray-400 hover:text-gold hover:bg-gold/10 rounded-full transition-all"
-                      >
-                        <FaEllipsisH size={14} />
-                      </button>
-
-                      {/* Dropdown Menu */}
-                      {activeMenu === product._id && (
-                        <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-xl border border-gray-100 z-40 overflow-hidden animate-scale-in origin-top-right">
-                          <button
-                            onClick={() => openEditModal(product)}
-                            className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-gold transition-colors flex items-center gap-2"
-                          >
-                            <FaEdit size={14} /> Edit Product
-                          </button>
-                          <button
-                            onClick={() => handleToggleFeatured(product)}
-                            className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-gold transition-colors flex items-center gap-2"
-                          >
-                            <FaStar size={14} /> {product.isFeatured ? "Un-feature" : "Mark Featured"}
-                          </button>
-                          <hr className="border-gray-50" />
-                          <button
-                            onClick={() => handleDelete(product._id)}
-                            className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
-                          >
-                            <FaTrash size={14} /> Delete Product
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {view === 'grid' && (
-                    <p className="text-gray-500 text-sm line-clamp-2 mb-4 leading-relaxed">
-                      {product.description}
-                    </p>
-                  )}
-
-                  <div className={`flex items-center justify-between ${view === 'grid' ? 'mt-auto pt-4 border-t border-gray-50' : 'mt-2'}`}>
-                    <div className="flex items-baseline gap-1">
-                      {product.offer > 0 ? (
-                        <>
-                          <span className="text-lg font-bold text-gray-900">₹{product.offer}</span>
-                          <span className="text-xs text-gray-400 line-through">₹{product.price}</span>
-                        </>
-                      ) : (
-                        <span className="text-lg font-bold text-gray-900">₹{product.price}</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
-                      <div className="flex items-center gap-1">
-                        <FaStar className="text-gold" />
-                        <span className="font-semibold text-gray-700">{product.rating || 0}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <span className={`w-2 h-2 rounded-full ${product.countInStock > 0 ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                        <span>{product.countInStock} Stock</span>
-                      </div>
-                    </div>
+                <div className="p-4">
+                  <p className="text-[10px] font-bold text-red-600 uppercase mb-1">{product.brand}</p>
+                  <h3 className="text-sm font-bold text-white truncate mb-2">{product.name}</h3>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-zinc-400">Stock: {product.countInStock}</span>
+                    <span className="font-bold text-white">₹{product.price}</span>
                   </div>
                 </div>
               </div>
@@ -351,18 +160,6 @@ const AllProducts = () => {
           </div>
         )}
       </div>
-
-      {/* Click outside to close menu handler - simpler implementation: transparent overlay when menu active */}
-      {activeMenu && (
-        <div className="fixed inset-0 z-10" onClick={() => setActiveMenu(null)}></div>
-      )}
-
-      {/* Edit Modal */}
-      <EditProductModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        productId={selectedProduct?._id}
-      />
     </div>
   );
 };

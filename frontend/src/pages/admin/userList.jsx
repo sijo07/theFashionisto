@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { FaSearch, FaEllipsisH, FaPlus, FaBan, FaTimes, FaCheck } from "react-icons/fa";
-import { MdEdit, MdDeleteForever } from "react-icons/md";
+import {
+  FaSearch, FaEllipsisV, FaPlus, FaBan,
+  FaTimes, FaCheck, FaUserShield, FaUserEdit,
+  FaTrashAlt, FaEnvelope, FaPhoneAlt, FaVenusMars,
+  FaCalendarAlt, FaShieldAlt
+} from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
 import Loader from "../../components/loader";
 import { toast } from "react-toastify";
 import {
@@ -9,7 +14,6 @@ import {
   useDeleteUserMutation,
   useUpdateUserMutation,
 } from "../../redux/api/userApiSlice";
-import Message from "../../components/message";
 import moment from "moment";
 import AdminHeader from "./AdminHeader";
 
@@ -20,26 +24,17 @@ const UserList = () => {
   const [createUser] = useCreateUserMutation();
 
   const [searchTerm, setSearchTerm] = useState("");
-
-  // Modal State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-
-  // Dropdown State
   const [openActionId, setOpenActionId] = useState(null);
   const dropdownRef = useRef(null);
 
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
+  useEffect(() => { refetch(); }, [refetch]);
 
-  // Click outside to close actions dropdown
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setOpenActionId(null);
-      }
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setOpenActionId(null);
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -53,494 +48,304 @@ const UserList = () => {
 
   const toggleUserStatus = async (user) => {
     try {
-      await updateUser({
-        userId: user._id,
-        isActive: !user.isActive
-      }).unwrap();
-      toast.success(`User ${!user.isActive ? 'activated' : 'deactivated'} successfully`);
+      await updateUser({ userId: user._id, isActive: !user.isActive }).unwrap();
+      toast.success(`Access ${!user.isActive ? 'activated' : 'deactivated'}.`);
       setOpenActionId(null);
       refetch();
-    } catch (error) {
-      toast.error(error?.data?.message || "Failed to update user status");
+    } catch (err) {
+      toast.error("Status update sequence failed.");
     }
   };
 
   const handleDeleteClick = async (id) => {
-    setOpenActionId(null);
-    if (window.confirm("Are you sure you want to delete this user?")) {
+    if (window.confirm("CRITICAL: Permanent user de-registration?")) {
       try {
         await deleteUser(id);
-        toast.success("User deleted successfully");
+        toast.success("User deleted from list.");
         refetch();
-      } catch (error) {
-        toast.error(error?.data?.message || error?.error || "An error occurred");
+      } catch (err) {
+        toast.error("Operation failed.");
       }
     }
+    setOpenActionId(null);
   };
 
-  const handleEditSave = async (updatedUserData) => {
+  const handleSave = async (updatedData) => {
     try {
-      await updateUser({
-        userId: selectedUser._id,
-        ...updatedUserData
-      }).unwrap();
-      toast.success("User updated successfully");
-      setIsEditModalOpen(false);
-      setSelectedUser(null);
+      if (isAddModalOpen) {
+        await createUser(updatedData).unwrap();
+        toast.success("New user created.");
+        setIsAddModalOpen(false);
+      } else {
+        await updateUser({ userId: selectedUser._id, ...updatedData }).unwrap();
+        toast.success("User profile updated.");
+        setIsEditModalOpen(false);
+        setSelectedUser(null);
+      }
       refetch();
-    } catch (error) {
-      toast.error(error?.data?.message || "Failed to update user");
+    } catch (err) {
+      toast.error("Data synchronization failed.");
     }
   };
 
-  const handleAddUser = async (newUserData) => {
-    try {
-      await createUser(newUserData).unwrap();
-      toast.success("User created successfully");
-      setIsAddModalOpen(false);
-      refetch();
-    } catch (error) {
-      toast.error(error?.data?.message || "Failed to create user");
-    }
+  if (isLoading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><Loader /></div>;
+  if (error) return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-rose-500 font-bold uppercase tracking-widest">Data retrieval failed</div>;
+
+  const superAdminId = users?.length > 0 ? users.reduce((p, c) => (new Date(p.createdAt) < new Date(c.createdAt) ? p : c))._id : null;
+  const filteredUsers = users?.filter(u =>
+    u.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    u.email.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || [];
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
   };
 
-  if (isLoading) return <Loader />;
-
-  if (error)
-    return (
-      <Message variant="danger">{error?.data?.message || error?.error || "An error occurred"}</Message>
-    );
-
-  // Identify Super Admin (First registered user)
-  const superAdminId = users && users.length > 0
-    ? users.reduce((prev, curr) => (new Date(prev.createdAt) < new Date(curr.createdAt) ? prev : curr))._id
-    : null;
-
-  // Counts
-  const totalUsers = users?.length || 0;
-  const adminCount = users?.filter(u => u.isAdmin).length || 0;
-  const customerCount = users?.filter(u => !u.isAdmin).length || 0;
-  const activeCount = users?.filter(u => u.isActive && !u.isAdmin).length || 0;
-
-  const filteredUsers = users?.filter(user =>
-    user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (user.phone && user.phone.includes(searchTerm))
-  );
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0 }
+  };
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB] font-sans text-gray-900" onClick={() => setOpenActionId(null)}>
-
-      {/* Header */}
-      <AdminHeader title="Customers" subtitle="Manage your customer base">
-        <div className="relative w-full md:w-80">
-          <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search customers..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-gray-100 border-none rounded-lg py-2.5 pl-12 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-200 transition-all font-medium text-gray-700 placeholder-gray-400"
-          />
+    <div className="min-h-screen bg-[#FDFEFE] font-sans text-gray-900 pb-20 overflow-x-hidden">
+      <AdminHeader title="User Management" subtitle={`Overseeing ${users?.length || 0} registered members on the platform.`}>
+        <div className="flex items-center gap-4">
+          <div className="relative group w-64 hidden md:block">
+            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-teal-600 transition-colors" />
+            <input
+              type="text"
+              placeholder="Search users..."
+              className="w-full bg-gray-50 border-none rounded-2xl py-3 pl-12 pr-4 text-sm font-medium focus:ring-4 focus:ring-teal-500/5 transition-all"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <button onClick={() => setIsAddModalOpen(true)} className="flex items-center gap-2 bg-gray-900 text-white px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl hover:-translate-y-1 transition-all active:scale-95">
+            <FaPlus size={10} /> Add New User
+          </button>
         </div>
       </AdminHeader>
 
-      <div className="p-8 max-w-[1600px] mx-auto">
+      <div className="px-6 lg:px-10 py-10 max-w-[1700px] mx-auto space-y-10">
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-            <p className="text-xs font-bold text-gray-400 uppercase">Total Users</p>
-            <p className="text-2xl font-bold text-gray-900">{totalUsers}</p>
-          </div>
-          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-            <p className="text-xs font-bold text-gray-400 uppercase">Admins</p>
-            <p className="text-2xl font-bold text-[#EA580C]">{adminCount}</p>
-          </div>
-          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-            <p className="text-xs font-bold text-gray-400 uppercase">Customers</p>
-            <p className="text-2xl font-bold text-[#0EA5E9]">{customerCount}</p>
-          </div>
-          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-            <p className="text-xs font-bold text-gray-400 uppercase">Active Customers</p>
-            <p className="text-2xl font-bold text-green-600">{activeCount}</p>
-          </div>
+        {/* KPI Strip */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          {[
+            { label: "Total Corps", val: users?.length, color: "teal", icon: <FaShieldAlt /> },
+            { label: "Executives", val: users?.filter(u => u.isAdmin).length, color: "blue", icon: <FaUserShield /> },
+            { label: "Active Field", val: users?.filter(u => u.isActive && !u.isAdmin).length, color: "emerald", icon: <FaCheck /> },
+            { label: "Intelligence", val: "Optimal", color: "indigo", icon: <FaShieldAlt /> }
+          ].map((kpi, i) => (
+            <div key={i} className={`bg-${kpi.color}-50 p-6 rounded-[2rem] border border-${kpi.color}-100 flex items-center gap-4`}>
+              <div className={`w-12 h-12 rounded-2xl bg-${kpi.color}-600 text-white flex items-center justify-center shadow-lg`}>{kpi.icon}</div>
+              <div>
+                <p className={`text-[10px] font-black text-${kpi.color}-600 uppercase tracking-widest`}>{kpi.label}</p>
+                <h4 className="text-2xl font-black text-gray-900 tracking-tight">{kpi.val}</h4>
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* Toolbar */}
-        <div className="flex flex-col md:flex-row justify-end items-center mb-6 gap-4">
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="flex items-center gap-2 bg-[#D97706] hover:bg-[#B45309] text-white px-6 py-3 rounded-lg text-sm font-bold shadow-md transition-colors"
-          >
-            <FaPlus /> Add User
-          </button>
-        </div>
-
-        {/* Users Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-visible">
-          <table className="min-w-full divide-y divide-gray-100">
-            <thead>
-              <tr className="bg-white text-gray-500">
-                <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider">ID</th>
-                <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider">User</th>
-                <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider">Phone</th>
-                <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider">Age</th>
-                <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider">Gender</th>
-                <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider">Role</th>
-                <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider">Status</th>
-                <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider">Last Active</th>
-                <th className="px-6 py-5 text-right text-xs font-bold uppercase tracking-wider"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {filteredUsers?.map((user) => (
-                <tr key={user._id} className="hover:bg-gray-50 transition-colors duration-200 group">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-400">
-                    {user.userId ? <span className="font-mono text-gray-500">{user.userId}</span> : `#${user._id.substring(0, 4).toUpperCase()}`}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      {user.image ? (
-                        <div className="h-10 w-10 relative rounded-full overflow-hidden mr-4 border border-gray-200">
-                          <img src={user.image} alt={user.username} className="w-full h-full object-cover transform scale-150" />
-                        </div>
-                      ) : (
-                        <div className="h-10 w-10 rounded-full bg-[#EADDCD] flex items-center justify-center text-[#9A7B4F] text-sm font-bold mr-4 uppercase">
-                          {user.username.charAt(0)}
-                        </div>
-                      )}
-                      <div className="flex flex-col">
-                        <span className="text-sm font-bold text-gray-900">{user.username}</span>
-                        <span className="text-xs text-gray-400">{user.email}</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
-                    {user.phone || <span className="text-gray-300 italic">N/A</span>}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
-                    {user.dateOfBirth ? moment().diff(user.dateOfBirth, 'years') : <span className="text-gray-300 italic">N/A</span>}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium capitalize">
-                    {user.gender || "Other"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {(user.userId?.startsWith("FSS") || user._id === superAdminId) ? (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-[#F3E8FF] text-[#7E22CE] border border-[#E9D5FF]">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#7E22CE] mr-2"></span>
-                        Super Admin
-                      </span>
-                    ) : user.isAdmin ? (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-[#FFF7ED] text-[#EA580C] border border-[#FFEDD5]">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#EA580C] mr-2"></span>
-                        Admin
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-500 border border-gray-200">
-                        <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mr-2"></span>
-                        Customer
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {user.isActive ? (
-                      <span className="inline-flex items-center text-xs font-bold text-green-600">
-                        <span className="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
-                        Active
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center text-xs font-bold text-red-600">
-                        <span className="w-2 h-2 rounded-full bg-red-500 mr-2"></span>
-                        Inactive
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
-                    {user.updatedAt ? moment(user.updatedAt).fromNow() : "N/A"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium relative">
-                    <div className="relative">
-                      <button
-                        className={`text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-all ${openActionId === user._id ? 'bg-gray-100 text-gray-600' : ''}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setOpenActionId(openActionId === user._id ? null : user._id);
-                        }}
-                      >
-                        <FaEllipsisH />
-                      </button>
-                      {/* Dropdown Menu */}
-                      {openActionId === user._id && (
-                        <div
-                          ref={dropdownRef}
-                          className="absolute right-10 top-0 w-48 bg-white rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] border border-gray-200 z-50 overflow-hidden transform origin-top-right animate-fade-in-up"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <button
-                            onClick={() => handleEditClick(user)}
-                            className="w-full text-left px-5 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors"
-                          >
-                            <MdEdit className="text-gray-500" size={20} /> Edit
-                          </button>
-
-                          {/* Super Admin Protection: Cannot deactivate the first registered user */}
-                          {user._id !== superAdminId ? (
-                            <button
-                              onClick={() => toggleUserStatus(user)}
-                              className={`w-full text-left px-5 py-3 text-sm flex items-center gap-3 transition-colors ${user.isActive ? 'text-orange-600 hover:bg-orange-50' : 'text-green-600 hover:bg-green-50'}`}
-                            >
-                              {user.isActive ? (
-                                <>
-                                  <FaBan className="text-orange-500" /> Deactivate
-                                </>
-                              ) : (
-                                <>
-                                  <FaCheck className="text-green-500" /> Activate
-                                </>
-                              )}
-                            </button>
-                          ) : (
-                            <div className="w-full text-left px-5 py-3 text-xs text-gray-400 italic flex items-center gap-2 bg-gray-50 cursor-not-allowed">
-                              <FaBan /> Super Admin Protected
-                            </div>
-                          )}
-
-                          {!user.isAdmin && (
-                            <button
-                              onClick={() => handleDeleteClick(user._id)}
-                              className="w-full text-left px-5 py-3 text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors border-t border-gray-50"
-                            >
-                              <MdDeleteForever className="text-red-500" size={20} /> Delete
-                            </button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </td>
+        {/* User Table Desktop Interface */}
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="bg-white rounded-[3rem] border border-gray-100 shadow-2xl shadow-gray-200/30 overflow-hidden"
+        >
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-gray-50/50 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
+                  <th className="px-8 py-6">User Profile</th>
+                  <th className="px-8 py-6">Connectivity</th>
+                  <th className="px-8 py-6">Status</th>
+                  <th className="px-8 py-6">Pulse Status</th>
+                  <th className="px-8 py-6">Session ID</th>
+                  <th className="px-8 py-6 text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination Info */}
-        <div className="mt-6 flex justify-between items-center text-xs text-gray-400 px-2">
-          <p>Showing {filteredUsers?.length} users</p>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {filteredUsers.map((user) => (
+                  <motion.tr key={user._id} variants={itemVariants} className="group hover:bg-teal-50/10 transition-colors">
+                    <td className="px-8 py-6">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-12 h-12 rounded-2xl p-[2px] ${user.isActive ? 'bg-gradient-to-br from-teal-500 to-teal-700' : 'bg-gray-200'} shadow-lg`}>
+                          <div className="w-full h-full bg-white rounded-[14px] overflow-hidden">
+                            {user.image ? <img src={user.image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-teal-600 font-black uppercase">{user.username.charAt(0)}</div>}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-sm font-black text-gray-900 uppercase tracking-tight">{user.username}</p>
+                          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Joined {moment(user.createdAt).format("MMM YYYY")}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-8 py-6">
+                      <p className="text-xs font-bold text-gray-600 lowercase">{user.email}</p>
+                      <p className="text-[10px] text-gray-400 font-medium">{user.phone || "No direct link"}</p>
+                    </td>
+                    <td className="px-8 py-6">
+                      <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border 
+                          ${user._id === superAdminId ? 'bg-purple-50 text-purple-700 border-purple-100' : (user.isAdmin ? 'bg-teal-50 text-teal-700 border-teal-100' : 'bg-gray-100 text-gray-500 border-gray-200')}`}>
+                        {user._id === superAdminId ? "Super User" : (user.isAdmin ? "Executive" : "Customer")}
+                      </span>
+                    </td>
+                    <td className="px-8 py-6">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${user.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]'}`}></span>
+                        <span className={`text-[10px] font-black uppercase tracking-widest ${user.isActive ? 'text-emerald-600' : 'text-rose-600'}`}>
+                          {user.isActive ? 'Operational' : 'Restricted'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-8 py-6">
+                      <p className="text-[10px] font-mono text-gray-400 bg-gray-50 px-2 py-1 rounded-md inline-block">
+                        {user.userId || user._id.substring(0, 12).toUpperCase()}
+                      </p>
+                    </td>
+                    <td className="px-8 py-6 text-right relative">
+                      <button onClick={(e) => { e.stopPropagation(); setOpenActionId(openActionId === user._id ? null : user._id); }} className="p-2 text-gray-300 hover:text-gray-900 transition-colors"><FaEllipsisV /></button>
+                      <AnimatePresence>
+                        {openActionId === user._id && (
+                          <motion.div ref={dropdownRef} initial={{ opacity: 0, scale: 0.9, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 10 }} className="absolute right-8 top-full mt-2 w-48 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 p-2 text-left">
+                            <button onClick={() => handleEditClick(user)} className="w-full flex items-center gap-3 p-3 text-xs font-bold text-gray-600 hover:bg-teal-50 hover:text-teal-600 rounded-xl transition-all"><FaUserEdit /> Edit Profile</button>
+                            {user._id !== superAdminId && <button onClick={() => toggleUserStatus(user)} className={`w-full flex items-center gap-3 p-3 text-xs font-bold rounded-xl transition-all ${user.isActive ? 'text-rose-500 hover:bg-rose-50' : 'text-emerald-600 hover:bg-emerald-50'}`}>{user.isActive ? <><FaBan /> Restrict Access</> : <><FaCheck /> Grant Access</>}</button>}
+                            {!user.isAdmin && <button onClick={() => handleDeleteClick(user._id)} className="w-full flex items-center gap-3 p-3 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl transition-all border-t border-gray-50 mt-1"><FaTrashAlt /> Delete User</button>}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
       </div>
 
-      {/* Edit User Modal */}
-      {isEditModalOpen && (
-        <UserModal
-          mode="edit"
-          user={selectedUser}
-          onClose={() => setIsEditModalOpen(false)}
-          onSave={handleEditSave}
-        />
-      )}
+      {/* User Management Modals */}
+      <AnimatePresence>
+        {(isEditModalOpen || isAddModalOpen) && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-xl px-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
+              className="bg-white rounded-[3rem] shadow-2xl w-full max-w-2xl overflow-hidden relative border border-white/20"
+            >
+              <div className="p-8 lg:p-12">
+                <div className="flex justify-between items-start mb-10">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-teal-600 text-white flex items-center justify-center shadow-xl shadow-teal-500/20"><FaUserShield size={24} /></div>
+                    <div>
+                      <h3 className="text-2xl font-black text-gray-900 tracking-tight">{isAddModalOpen ? 'CREATE NEW USER' : 'MODIFY USER'}</h3>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">{isAddModalOpen ? 'Registration Mode Active' : `Profile ID: ${selectedUser?._id.substring(0, 16)}`}</p>
+                    </div>
+                  </div>
+                  <button onClick={() => { setIsEditModalOpen(false); setIsAddModalOpen(false); setSelectedUser(null); }} className="p-4 text-gray-300 hover:text-rose-500 transition-colors"><FaTimes size={24} /></button>
+                </div>
 
-      {/* Add User Modal */}
-      {isAddModalOpen && (
-        <UserModal
-          mode="add"
-          onClose={() => setIsAddModalOpen(false)}
-          onSave={handleAddUser}
-        />
-      )}
+                <UserForm
+                  mode={isAddModalOpen ? "add" : "edit"}
+                  user={selectedUser}
+                  onClose={() => { setIsEditModalOpen(false); setIsAddModalOpen(false); setSelectedUser(null); }}
+                  onSave={handleSave}
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <div className="fixed inset-0 z-[45] pointer-events-none" onClick={() => setOpenActionId(null)}></div>
     </div>
   );
 };
 
-// Reusable User Modal Component
-const UserModal = ({ mode = "edit", user, onClose, onSave }) => {
-  const [username, setUsername] = useState(user?.username || "");
-  const [email, setEmail] = useState(user?.email || "");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [isAdmin, setIsAdmin] = useState(user?.isAdmin || false);
-  const [phone, setPhone] = useState(user?.phone || "");
-  const [gender, setGender] = useState(user?.gender || "Other");
-  const [dateOfBirth, setDateOfBirth] = useState(user?.dateOfBirth ? moment(user.dateOfBirth).format("YYYY-MM-DD") : "");
+const UserForm = ({ mode, user, onClose, onSave }) => {
+  const [formData, setFormData] = useState({
+    username: user?.username || "",
+    email: user?.email || "",
+    password: "",
+    confirmPassword: "",
+    isAdmin: user?.isAdmin || false,
+    phone: user?.phone || "",
+    gender: user?.gender || "Other",
+    dateOfBirth: user?.dateOfBirth ? moment(user.dateOfBirth).format("YYYY-MM-DD") : ""
+  });
 
-  // Update state when modal user changes (fix for edit mode)
-  useEffect(() => {
-    if (mode === 'edit' && user) {
-      setUsername(user.username || "");
-      setEmail(user.email || "");
-      setIsAdmin(user.isAdmin || false);
-      setPhone(user.phone || "");
-      setGender(user.gender || "Other");
-      setDateOfBirth(user.dateOfBirth ? moment(user.dateOfBirth).format("YYYY-MM-DD") : "");
-    }
-  }, [user, mode]);
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    if (dateOfBirth) {
-      const age = moment().diff(dateOfBirth, 'years');
-      if (age < 18) {
-        toast.error("User must be at least 18 years old");
-        return;
-      }
-    }
-
-    if (mode === "add") {
-      if (password !== confirmPassword) {
-        toast.error("Passwords do not match");
-        return;
-      }
-      onSave({ username, email, password, isAdmin, phone, gender, dateOfBirth });
-    } else {
-      onSave({ username, email, isAdmin, phone, gender, dateOfBirth });
-    }
-
+    if (mode === 'add' && formData.password !== formData.confirmPassword) return toast.error("Password discrepancy detected.");
+    onSave(formData);
   };
 
+  const inputClass = "w-full bg-gray-50 border-none rounded-2xl px-5 py-4 text-sm font-bold text-gray-700 focus:ring-4 focus:ring-teal-500/10 placeholder:text-gray-300 transition-all";
+  const labelClass = "text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block";
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden animate-scale-in">
-        <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-          <h3 className="text-xl font-bold text-gray-800">{mode === 'edit' ? 'Edit User' : 'Add New User'}</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors bg-white p-2 rounded-full shadow-sm hover:shadow-md">
-            <FaTimes size={16} />
-          </button>
+    <form onSubmit={handleSubmit} className="space-y-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-2 col-span-full md:col-span-1">
+          <label className={labelClass}><FaUserShield className="inline mr-2" />User Designation</label>
+          <input name="username" value={formData.username} onChange={handleChange} className={inputClass} placeholder="REAL NAME" required />
+        </div>
+        <div className="space-y-2 col-span-full md:col-span-1">
+          <label className={labelClass}><FaEnvelope className="inline mr-2" />Email Address</label>
+          <input type="email" name="email" value={formData.email} onChange={handleChange} className={inputClass} placeholder="LINK_ID@DOMAIN.TOP" required />
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8 space-y-5">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Username</label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-300 transition-all shadow-sm"
-                placeholder="John Doe"
-                required
-              />
+        {mode === 'add' && (
+          <>
+            <div className="space-y-2">
+              <label className={labelClass}>Security Passphrase</label>
+              <input type="password" name="password" value={formData.password} onChange={handleChange} className={inputClass} placeholder="••••••••" required />
             </div>
-            <div className="col-span-2">
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-300 transition-all shadow-sm"
-                placeholder="john@example.com"
-                required
-              />
+            <div className="space-y-2">
+              <label className={labelClass}>Verify Passphrase</label>
+              <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} className={inputClass} placeholder="••••••••" required />
             </div>
+          </>
+        )}
 
-            {/* Password fields only for Add Mode */}
-            {mode === "add" && (
-              <>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Password</label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-300 transition-all shadow-sm"
-                    placeholder="••••••••"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Confirm Password</label>
-                  <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-300 transition-all shadow-sm"
-                    placeholder="••••••••"
-                    required
-                  />
-                </div>
-              </>
-            )}
-
-            <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Phone</label>
-              <input
-                type="text"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-300 transition-all shadow-sm"
-                placeholder="+1 234 567 8900"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Gender</label>
-              <select
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-300 transition-all shadow-sm"
-              >
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            <div className="col-span-2">
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Date of Birth</label>
-              <input
-                type="date"
-                value={dateOfBirth}
-                max={moment().subtract(18, 'years').format("YYYY-MM-DD")}
-                onChange={(e) => setDateOfBirth(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-300 transition-all shadow-sm"
-              />
-            </div>
-          </div>
-
-          {user?.userId?.startsWith("FSS") ? (
-            <div className="flex items-center gap-3 p-4 bg-purple-50 rounded-xl border border-purple-100">
-              <div className="w-5 h-5 flex items-center justify-center rounded-full bg-purple-200">
-                <FaCheck className="text-purple-600 text-xs" />
-              </div>
-              <span className="text-sm font-bold text-purple-700">
-                Super Admin Account
-              </span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-3 p-4 bg-orange-50 rounded-xl border border-orange-100">
-              <div className="flex items-center h-5">
-                <input
-                  type="checkbox"
-                  id="isAdmin"
-                  checked={isAdmin}
-                  onChange={(e) => setIsAdmin(e.target.checked)}
-                  className="w-5 h-5 text-orange-500 rounded focus:ring-orange-400 border-gray-300"
-                />
-              </div>
-              <label htmlFor="isAdmin" className="text-sm font-semibold text-gray-700 cursor-pointer select-none">
-                Grant Admin Privileges
-              </label>
-            </div>
-          )}
-
-          <div className="pt-4 flex gap-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold text-sm transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-orange-200 transition-all transform hover:-translate-y-0.5"
-            >
-              {mode === 'edit' ? 'Save Changes' : 'Create User'}
-            </button>
-          </div>
-        </form>
+        <div className="space-y-2">
+          <label className={labelClass}><FaPhoneAlt className="inline mr-2" />Comm Line</label>
+          <input name="phone" value={formData.phone} onChange={handleChange} className={inputClass} placeholder="+X XXX XXX XXXX" />
+        </div>
+        <div className="space-y-2">
+          <label className={labelClass}><FaVenusMars className="inline mr-2" />Biological Marker</label>
+          <select name="gender" value={formData.gender} onChange={handleChange} className={inputClass}>
+            <option value="Male">MALE</option>
+            <option value="Female">FEMALE</option>
+            <option value="Other">OTHER</option>
+          </select>
+        </div>
+        <div className="space-y-2 col-span-full">
+          <label className={labelClass}><FaCalendarAlt className="inline mr-2" />Temporal Origin (DOB)</label>
+          <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} className={inputClass} />
+        </div>
       </div>
-    </div>
+
+      <div className="flex items-center gap-4 p-6 bg-teal-50 rounded-[1.5rem] border border-teal-100">
+        <input type="checkbox" name="isAdmin" checked={formData.isAdmin} onChange={handleChange} className="w-6 h-6 text-teal-600 rounded-lg border-teal-200 focus:ring-teal-500" />
+        <div>
+          <p className="text-xs font-black text-teal-700 uppercase leading-none">Administrative Access</p>
+          <p className="text-[10px] text-teal-600/60 font-medium mt-1">Grant administrative access to system controls.</p>
+        </div>
+      </div>
+
+      <div className="flex gap-4 pt-4">
+        <button type="button" onClick={onClose} className="flex-1 py-4 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded-2xl text-xs font-black uppercase tracking-widest transition-colors">Abort</button>
+        <button type="submit" className="flex-2 py-4 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-teal-500/20 transition-all">Synchronize Profile</button>
+      </div>
+    </form>
   );
 };
 

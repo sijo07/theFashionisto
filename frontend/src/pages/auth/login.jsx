@@ -52,7 +52,7 @@ const Login = () => {
   };
 
   return (
-    <div className="w-full lg:py-10 bg-gray-50">
+    <div className="w-full lg:pt-28 lg:pb-10 bg-gray-50">
       <div className="mx-auto text-center lg:w-3/5">
         <div className="flex flex-col bg-white shadow-2xl md:flex-row">
           <div className="w-full h-full ">

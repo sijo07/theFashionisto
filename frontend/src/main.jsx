@@ -24,6 +24,7 @@ import {
 const Login = lazy(() => import("./pages/auth/login.jsx"));
 const Register = lazy(() => import("./pages/auth/register.jsx"));
 const ErrorPage = lazy(() => import("./pages/ErrorPage.jsx"));
+const NotFound = lazy(() => import("./pages/NotFound.jsx"));
 
 import Profile from "./pages/user/profile";
 import ChangePassword from "./pages/user/changePass.jsx";
@@ -101,6 +102,13 @@ const router = createBrowserRouter(
         <Route path="dashboard" element={<AdminDash />} />
         <Route path="inventory" element={<Inventory />} />
       </Route>
+
+      {/* Catch-all 404 Route */}
+      <Route path="*" element={
+        <Suspense fallback={<div>Loading...</div>}>
+          <NotFound />
+        </Suspense>
+      } />
     </Route>
   )
 );

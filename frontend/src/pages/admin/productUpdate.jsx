@@ -1,361 +1,305 @@
 import { useState, useEffect } from "react";
-
 import { useNavigate, useParams } from "react-router-dom";
 import {
   useUpdateProductMutation,
   useDeleteProductMutation,
   useGetProductByIdQuery,
-  useUploadProductImageMutation,
+  useUploadProductImageMutation
 } from "../../redux/api/productApiSlice";
 import { useFetchCategoriesQuery } from "../../redux/api/categoryApiSlice";
 import { toast } from "react-toastify";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  FaCloudUploadAlt, FaBoxOpen, FaLayerGroup, FaTags,
+  FaRulerCombined, FaMoneyBillWave, FaShoePrints, FaTshirt,
+  FaTimes, FaChevronRight, FaStar, FaShieldAlt, FaTrashAlt
+} from "react-icons/fa";
+import { GiTrousers } from "react-icons/gi";
+import AdminHeader from "./AdminHeader";
 
 const ProductUpdate = () => {
   const params = useParams();
-  const { data: productData } = useGetProductByIdQuery(params._id);
-
-  const [brand, setBrand] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
-  const [offer, setOffer] = useState("");
-  const [size, setSize] = useState("");
-  const [quantity, setQuantity] = useState("");
-  const [image, setImage] = useState(null);
-  const [imageUrl, setImageUrl] = useState(null);
-  const [category, setCategory] = useState("");
-  const [mainCategory, setMainCategory] = useState("");
-
   const navigate = useNavigate();
-
+  const { data: productData } = useGetProductByIdQuery(params._id);
   const { data: categoriesData } = useFetchCategoriesQuery();
   const [uploadProductImage] = useUploadProductImageMutation();
   const [updateProduct] = useUpdateProductMutation();
   const [deleteProduct] = useDeleteProductMutation();
 
-  // Separate main categories and subcategories
-  const mainCategories = categoriesData?.mainCategories || [];
-  const subCategories = categoriesData?.subCategories || [];
+  const [brand, setBrand] = useState("");
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [offer, setOffer] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [sizeStock, setSizeStock] = useState({});
+  const [sizeType, setSizeType] = useState("clothing");
+  const [imageUrl, setImageUrl] = useState(null);
+  const [selectedSuper, setSelectedSuper] = useState("");
+  const [selectedMain, setSelectedMain] = useState("");
+  const [selectedSub, setSelectedSub] = useState("");
+
+  const superCategories = categoriesData?.filter(c => !c.parent) || [];
+  const mainCategories = categoriesData?.filter(c => c.parent && superCategories.find(s => s._id === (c.parent?._id || c.parent))) || [];
+  const subCategories = categoriesData?.filter(c => c.parent && mainCategories.find(m => m._id === (c.parent?._id || c.parent))) || [];
+
+  const sizeMaps = {
+    clothing: ["XS", "S", "M", "L", "XL", "XXL", "3XL"],
+    footwear: ["UK-6", "UK-6.5", "UK-7", "UK-7.5", "UK-8", "UK-8.5", "UK-9", "UK-9.5", "UK-10", "UK-11"],
+    jeans: ["28", "30", "32", "34", "36", "38", "40", "42", "44"]
+  };
+
+  const activeSizes = sizeMaps[sizeType] || sizeMaps.clothing;
 
   useEffect(() => {
     if (productData) {
-      setBrand(productData.brand);
-      setDescription(productData.description);
-      setPrice(productData.price);
-      setOffer(productData.offer);
-      setSize(productData.size);
-      setQuantity(productData.quantity);
-      setImageUrl(productData.image); // This should be the URL
+      setName(productData.name || "");
+      setBrand(productData.brand || "");
+      setDescription(productData.description || "");
+      setPrice(productData.price || "");
+      setOffer(productData.offer || "");
+      setQuantity(productData.quantity || "");
+      setImageUrl(productData.image || "");
 
-      const catId = productData.category._id || productData.category;
-      setCategory(catId);
+      const initialStock = {};
+      if (productData.sizes && Array.isArray(productData.sizes)) {
+        productData.sizes.forEach(item => { initialStock[item.size] = item.stock; });
+      }
+      setSizeStock(initialStock);
 
-      // Attempt to set main category if parent exists
-      // productData.category might be an object if populated
-      if (typeof productData.category === 'object' && productData.category.parent) {
-        setMainCategory(productData.category.parent);
+      const firstSize = Object.keys(initialStock)[0];
+      if (firstSize?.startsWith("UK")) setSizeType("footwear");
+      else if (!isNaN(firstSize) && Number(firstSize) > 20) setSizeType("jeans");
+      else setSizeType("clothing");
+
+      if (productData.category) {
+        const catId = productData.category._id || productData.category;
+        setSelectedSub(catId);
+        if (categoriesData) {
+          const currentSub = categoriesData.all?.find(c => c._id === catId);
+          if (currentSub?.parent) {
+            setSelectedMain(currentSub.parent);
+            const currentMain = categoriesData.all?.find(c => c._id === currentSub.parent);
+            if (currentMain?.parent) setSelectedSuper(currentMain.parent);
+          }
+        }
       }
     }
-  }, [productData]);
+  }, [productData, categoriesData]);
 
-  const uploadFileHandler = async (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     const formData = new FormData();
     formData.append("image", file);
     try {
       const res = await uploadProductImage(formData).unwrap();
-      toast.success(res.message);
-      setImage(file); // Store the actual file object
-      setImageUrl(res.url); // Store the URL for display
+      toast.success("Optic data synchronized.");
+      setImageUrl(res.url);
     } catch (err) {
-      console.error(err);
-      toast.error(err?.data?.message || err.error);
+      toast.error("Image upload failed.");
     }
+  };
+
+  const toggleSize = (s) => {
+    const newStock = { ...sizeStock };
+    if (newStock.hasOwnProperty(s)) delete newStock[s];
+    else newStock[s] = "";
+    setSizeStock(newStock);
+  };
+
+  const handleStockChange = (s, value) => {
+    if (sizeStock.hasOwnProperty(s)) setSizeStock({ ...sizeStock, [s]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const sizesArray = Object.entries(sizeStock).map(([size, stock]) => ({ size, stock: Number(stock) || 0 }));
+    if (sizesArray.length === 0) return toast.error("Product requires at least one size variant.");
+
     try {
       const formData = new FormData();
+      formData.append("name", name);
       formData.append("brand", brand);
       formData.append("description", description);
       formData.append("price", price);
       formData.append("offer", offer);
-      formData.append("size", size);
-      formData.append("category", category);
+      formData.append("category", selectedSub);
+      formData.append("sizes", JSON.stringify(sizesArray));
       formData.append("quantity", quantity);
+      if (imageUrl) formData.append("image", imageUrl);
 
-      // Send the image URL as a simple string
-      if (imageUrl) {
-        formData.append("image", imageUrl);
-      }
-
-      const { data } = await updateProduct({
-        productId: params._id,
-        formData,
-      });
-
-      if (data?.error) {
-        toast.error(data.error);
-      } else {
-        toast.success("Product successfully updated.");
-        navigate("/admin/allProductsList");
-      }
+      await updateProduct({ productId: params._id, formData }).unwrap();
+      toast.success("Product information updated.");
+      navigate("/admin/allproductslist");
     } catch (err) {
-      console.error(err);
-      toast.error("Product update failed. Try again.");
+      toast.error("Update process failed.");
     }
   };
 
   const handleDelete = async () => {
-    try {
-      const answer = window.confirm(
-        "Are you sure you want to delete this product?"
-      );
-      if (!answer) return;
-
-      const { data } = await deleteProduct(params._id);
-      toast.success(`"${data.brand}" is deleted`);
-      navigate("/admin/allProductsList");
-    } catch (err) {
-      console.error(err);
-      toast.error("Delete failed. Try again.");
+    if (window.confirm("CRITICAL: Permanent product deletion?")) {
+      try {
+        await deleteProduct(params._id).unwrap();
+        toast.success("Product removed from catalog.");
+        navigate("/admin/allproductslist");
+      } catch (err) {
+        toast.error("Purge operation failed.");
+      }
     }
   };
 
-  const sizeOptions = [
-    "S",
-    "M",
-    "L",
-    "XL",
-    "XXL",
-    "30",
-    "32",
-    "34",
-    "36",
-    "Uk-7",
-    "Uk-7.5",
-    "Uk-8",
-    "Uk-8.5",
-    "Uk-9",
-  ].map((size) => (
-    <option key={size} value={size}>
-      {size}
-    </option>
-  ));
+  const inputClass = "w-full bg-white border border-gray-100 rounded-2xl px-5 py-4 text-sm font-bold text-gray-700 focus:ring-4 focus:ring-teal-500/10 placeholder:text-gray-300 transition-all";
+  const labelClass = "text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block";
 
   return (
-    <div className="w-full">
-      <h1 className="text-3xl font-bold text-white mb-6 flex items-center gap-3 animate-fade-in-down">
-        <span className="text-teal-400">#</span>
-        Update Product
-      </h1>
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Left Column: Image Preview & Actions */}
-        <div className="lg:w-1/3 space-y-6">
-          <div className="bg-gray-800/40 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/5">
-            <h3 className="text-lg font-bold text-gray-100 mb-4">Product Image</h3>
-            <label className="flex flex-col items-center justify-center w-full h-96 border-2 border-dashed border-gray-600 rounded-2xl cursor-pointer hover:bg-gray-700/30 hover:border-teal-500 transition-colors bg-gray-900/20 overflow-hidden relative group">
-              {imageUrl ? (
-                <>
-                  <img
-                    src={imageUrl}
-                    alt="Product Preview"
-                    className="w-full h-full object-contain p-4"
-                  />
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="text-white font-medium bg-teal-600/80 px-4 py-2 rounded-lg backdrop-blur-sm shadow-lg">
-                      Change Image
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <div className="flex flex-col items-center justify-center pt-5 pb-6 text-gray-500">
-                  <svg
-                    className="w-12 h-12 mb-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                  <p className="mb-2 text-sm font-semibold">Click to upload</p>
-                  <p className="text-xs">SVG, PNG, JPG or GIF</p>
-                </div>
-              )}
-              <input
-                type="file"
-                name="image"
-                accept="image/*"
-                onChange={uploadFileHandler}
-                className="hidden"
-              />
-            </label>
-          </div>
+    <div className="min-h-screen bg-[#FDFEFE] font-sans text-gray-900 pb-20 overflow-x-hidden">
+      <AdminHeader title="Update Product Information" subtitle={`Modifying details for Item ID: ${params._id.substring(0, 16)}`} />
 
-          <div className="bg-red-900/10 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-red-500/20">
-            <h3 className="text-lg font-bold text-red-400 mb-4">Danger Zone</h3>
-            <p className="text-sm text-red-200/70 mb-4">
-              Deleting this product will remove it permanently from the store. This action cannot be undone.
-            </p>
-            <button
-              onClick={handleDelete}
-              className="w-full py-3 px-4 bg-red-500/10 text-red-400 font-bold rounded-xl border border-red-500/50 hover:bg-red-500 hover:text-white transition-colors"
+      <div className="p-6 lg:p-10 max-w-[1700px] mx-auto">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+
+          {/* Tactical Sidebar */}
+          <div className="lg:col-span-4 space-y-8">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+              className="bg-white p-8 rounded-[3rem] shadow-2xl shadow-gray-200/40 border border-gray-100"
             >
-              Delete Product
-            </button>
+              <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight mb-8 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center shadow-lg shadow-teal-500/20"><FaCloudUploadAlt /></div>
+                Optic Stream
+              </h3>
+              <label className="group relative flex flex-col items-center justify-center w-full aspect-[3/4] border-2 border-dashed border-gray-200 rounded-[2.5rem] cursor-pointer hover:border-teal-500 hover:bg-teal-50/10 transition-all overflow-hidden shadow-inner">
+                {imageUrl ? (
+                  <img src={imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-gray-300 group-hover:text-teal-600 transition-colors">
+                    <FaCloudUploadAlt size={48} className="mb-4" />
+                    <p className="text-[10px] font-black uppercase tracking-widest">Connect Visual Stream</p>
+                  </div>
+                )}
+                <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+              </label>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}
+              className="bg-rose-50 p-8 rounded-[3rem] shadow-2xl shadow-rose-200/20 border border-rose-100 space-y-4"
+            >
+              <h3 className="text-lg font-black text-rose-600 uppercase tracking-tight flex items-center gap-3"><FaTrashAlt /> Danger Zone</h3>
+              <p className="text-[10px] font-bold text-rose-600/60 uppercase tracking-widest leading-relaxed">Permanent deletion of this product will cascade through all catalog instances.</p>
+              <button type="button" onClick={handleDelete} className="w-full py-4 bg-white border border-rose-200 text-rose-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-600 hover:text-white transition-all shadow-xl shadow-rose-500/5">Execute Deletion</button>
+            </motion.div>
           </div>
-        </div>
 
-        {/* Right Column: details Form */}
-        <div className="lg:w-2/3">
-          <div className="bg-gray-800/40 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-white/5">
-            <h2 className="text-2xl font-bold text-gray-100 mb-6 border-b border-gray-700 pb-4">
-              Product Details
-            </h2>
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Row 1 */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Global Config */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
+            className="lg:col-span-8 space-y-8"
+          >
+            <div className="bg-white p-8 rounded-[3rem] shadow-2xl shadow-gray-200/40 border border-gray-100 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-400">Brand Name</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Nike"
-                    value={brand}
-                    onChange={(e) => setBrand(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-gray-900/50 border-gray-700 text-white focus:bg-gray-900 focus:border-teal-500 focus:ring-2 focus:ring-teal-900 transition-all font-medium placeholder-gray-600"
-                    required
-                  />
+                  <label className={labelClass}>Product Title</label>
+                  <input value={name} onChange={(e) => setName(e.target.value)} className={inputClass} placeholder="NAME" required />
                 </div>
-
-                {/* Main Category */}
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-400">Main Category</label>
-                  <select
-                    value={mainCategory}
-                    onChange={(e) => {
-                      setMainCategory(e.target.value);
-                      setCategory(""); // Reset subcategory
-                    }}
-                    className="w-full px-4 py-3 rounded-xl bg-gray-900/50 border-gray-700 text-white focus:bg-gray-900 focus:border-teal-500 focus:ring-2 focus:ring-teal-900 transition-all font-medium appearance-none"
-                  >
-                    <option value="" className="bg-gray-800">Select Main Category</option>
-                    {mainCategories.map((cat) => (
-                      <option key={cat._id} value={cat._id}>{cat.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Sub Category */}
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-400">Sub Category</label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-gray-900/50 border-gray-700 text-white focus:bg-gray-900 focus:border-teal-500 focus:ring-2 focus:ring-teal-900 transition-all font-medium appearance-none"
-                    disabled={!mainCategory}
-                    required
-                  >
-                    <option value="" className="bg-gray-800">Select Sub Category</option>
-                    {subCategories
-                      .filter(c => c.parent === mainCategory || (c.parent?._id === mainCategory))
-                      .map((cat) => (
-                        <option key={cat._id} value={cat._id}>
-                          {cat.name}
-                        </option>
-                      ))}
-                  </select>
+                  <label className={labelClass}>Authority ID (Brand)</label>
+                  <input value={brand} onChange={(e) => setBrand(e.target.value)} className={inputClass} placeholder="BRAND" required />
                 </div>
               </div>
-
-              {/* Description */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-400">Description</label>
-                <textarea
-                  placeholder="Describe your product..."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-900/50 border-gray-700 text-white focus:bg-gray-900 focus:border-teal-500 focus:ring-2 focus:ring-teal-900 transition-all font-medium min-h-[150px] resize-y placeholder-gray-600"
-                  required
-                />
+                <label className={labelClass}>Technical Depth (Description)</label>
+                <textarea rows="4" value={description} onChange={(e) => setDescription(e.target.value)} className={`${inputClass} resize-none`} placeholder="Product description..." required />
               </div>
+            </div>
 
-              {/* Row 2: Pricing */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-400">Price (₹)</label>
-                  <input
-                    type="number"
-                    placeholder="0.00"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-gray-900/50 border-gray-700 text-white focus:bg-gray-900 focus:border-teal-500 focus:ring-2 focus:ring-teal-900 transition-all font-bold text-lg placeholder-gray-600"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-400">Offer Price (₹)</label>
-                  <input
-                    type="number"
-                    placeholder="0.00"
-                    value={offer}
-                    onChange={(e) => setOffer(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-gray-900/50 border-gray-700 text-teal-400 focus:bg-gray-900 focus:border-teal-500 focus:ring-2 focus:ring-teal-900 transition-all font-bold text-lg placeholder-gray-600"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-400">Stock Quantity</label>
-                  <input
-                    type="number"
-                    placeholder="0"
-                    value={quantity}
-                    onChange={(e) => setQuantity(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-gray-900/50 border-gray-700 text-white focus:bg-gray-900 focus:border-teal-500 focus:ring-2 focus:ring-teal-900 transition-all font-medium placeholder-gray-600"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Row 3: Size */}
+            <div className="bg-white p-8 rounded-[3rem] shadow-2xl shadow-gray-200/40 border border-gray-100 grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-400">Size Variant</label>
-                <select
-                  value={size}
-                  onChange={(e) => setSize(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-900/50 border-gray-700 text-white focus:bg-gray-900 focus:border-teal-500 focus:ring-2 focus:ring-teal-900 transition-all font-medium"
-                >
-                  <option value="" className="bg-gray-800">Select Size</option>
-                  {sizeOptions}
+                <label className={labelClass}>Department</label>
+                <select value={selectedSuper} onChange={(e) => { setSelectedSuper(e.target.value); setSelectedMain(""); setSelectedSub(""); }} className={inputClass}>
+                  <option value="">SELECT SUPER</option>
+                  {superCategories.map(c => <option key={c._id} value={c._id}>{c.name.toUpperCase()}</option>)}
                 </select>
               </div>
-
-              {/* Action Buttons */}
-              <div className="pt-6 border-t border-gray-700/50 flex justify-end gap-4">
-                <button
-                  type="button"
-                  onClick={() => navigate("/admin/allProductsList")}
-                  className="px-8 py-3 rounded-xl font-bold text-gray-400 bg-gray-800 hover:bg-gray-700 hover:text-white transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-8 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-teal-500 to-teal-600 shadow-lg shadow-teal-500/30 hover:from-teal-400 hover:scale-[1.02] transition-all"
-                >
-                  Save Changes
-                </button>
+              <div className="space-y-2">
+                <label className={labelClass}>Main Category</label>
+                <select value={selectedMain} onChange={(e) => { setSelectedMain(e.target.value); setSelectedSub(""); }} disabled={!selectedSuper} className={`${inputClass} disabled:opacity-40`}>
+                  <option value="">SELECT MAIN</option>
+                  {mainCategories.filter(c => c.parent === selectedSuper || c.parent?._id === selectedSuper).map(c => <option key={c._id} value={c._id}>{c.name.toUpperCase()}</option>)}
+                </select>
               </div>
-            </form>
-          </div>
-        </div>
+              <div className="space-y-2">
+                <label className={labelClass}>Sector Hub (Sub)</label>
+                <select value={selectedSub} onChange={(e) => setSelectedSub(e.target.value)} disabled={!selectedMain} className={`${inputClass} disabled:opacity-40`}>
+                  <option value="">SELECT SECTOR</option>
+                  {subCategories.filter(c => c.parent === selectedMain || c.parent?._id === selectedMain).map(c => <option key={c._id} value={c._id}>{c.name.toUpperCase()}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <div className="bg-white p-8 rounded-[3rem] shadow-2xl shadow-gray-200/40 border border-gray-100">
+              <div className="flex items-center justify-between mb-8">
+                <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-500/20"><FaRulerCombined /></div>
+                  Proportional Mapping
+                </h3>
+                <div className="flex bg-gray-50 p-1.5 rounded-2xl gap-1 border border-gray-100">
+                  {['clothing', 'footwear', 'jeans'].map(type => (
+                    <button key={type} type="button" onClick={() => setSizeType(type)} className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${sizeType === type ? 'bg-white text-teal-600 shadow-xl' : 'text-gray-400'}`}>{type}</button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {activeSizes.map(s => {
+                  const isSelected = sizeStock.hasOwnProperty(s);
+                  return (
+                    <div key={s} className={`p-5 rounded-[2rem] border transition-all ${isSelected ? 'border-teal-400 bg-teal-50/20 shadow-xl shadow-teal-500/5' : 'border-gray-100 bg-gray-50/50 opacity-60'}`}>
+                      <div className="flex items-center justify-between mb-4">
+                        <span className={`text-xs font-black ${isSelected ? 'text-teal-700' : 'text-gray-400'}`}>{s}</span>
+                        <div onClick={() => toggleSize(s)} className={`w-5 h-5 rounded-full border-2 cursor-pointer flex items-center justify-center ${isSelected ? 'border-teal-500 bg-teal-500' : 'border-gray-200 bg-white'}`}>
+                          {isSelected && <div className="w-1.5 h-1.5 bg-white rounded-full shadow-lg" />}
+                        </div>
+                      </div>
+                      {isSelected && <input type="number" value={sizeStock[s]} onChange={(e) => handleStockChange(s, e.target.value)} className="w-full bg-white border-none rounded-xl px-3 py-2 text-[10px] font-black text-center shadow-inner" placeholder="QTY" />}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="bg-gray-900 p-8 rounded-[3rem] shadow-2xl border border-white/5 relative overflow-hidden">
+              <div className="relative z-10 grid grid-cols-2 md:grid-cols-3 gap-8">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-teal-400 uppercase tracking-widest">Liquid Val (Price)</label>
+                  <div className="relative flex items-center bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white">
+                    <span className="text-teal-400 font-black mr-2">₹</span>
+                    <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="bg-transparent border-none p-0 text-xl font-black focus:ring-0 w-full" required />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-teal-400 uppercase tracking-widest">Incentive (Offer)</label>
+                  <div className="relative flex items-center bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white">
+                    <span className="text-teal-400 font-black mr-2">₹</span>
+                    <input type="number" value={offer} onChange={(e) => setOffer(e.target.value)} className="bg-transparent border-none p-0 text-xl font-black focus:ring-0 w-full" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-teal-400 uppercase tracking-widest">Order Cap</label>
+                  <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-xl font-black text-white focus:ring-0" required />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-6 gap-4">
+              <button type="button" onClick={() => navigate("/admin/allproductslist")} className="px-10 py-5 bg-gray-100 hover:bg-gray-200 text-gray-500 font-black text-xs uppercase tracking-widest rounded-[2rem] transition-all">Abort Sync</button>
+              <button type="submit" className="px-12 py-5 bg-teal-600 hover:bg-teal-700 text-white font-black text-sm uppercase tracking-widest rounded-[2rem] shadow-2xl shadow-teal-500/40 transform hover:-translate-y-1 transition-all active:scale-95 flex items-center gap-4">
+                Commit Sync <FaChevronRight size={10} />
+              </button>
+            </div>
+          </motion.div>
+        </form>
       </div>
     </div>
   );

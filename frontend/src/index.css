@@ -1,10 +1,60 @@
-@import url("https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-bg-primary: #000000;
+  --color-bg-secondary: #121212;
+  --color-bg-card: #18181b;
+  --color-accent: #EF4444;
+  /* red-500 */
+  --color-accent-hover: #DC2626;
+  /* red-600 */
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #A1A1AA;
+  /* zinc-400 */
+  --color-border: #27272a;
+  /* zinc-800 */
+}
+
 body {
-  font-family: "Raleway", sans-serif;
-  margin: 0px;
-  font-feature-settings: "lnum" 1;
+  font-family: 'Inter', sans-serif;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  margin: 0;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}
+
+/* Selection */
+::selection {
+  background-color: var(--color-accent);
+  color: white;
+}
+
+/* Utilities */
+.text-stroke-white {
+  -webkit-text-stroke: 1px white;
+}
+
+.font-fashion {
+  font-family: 'Playfair Display', serif;
 }

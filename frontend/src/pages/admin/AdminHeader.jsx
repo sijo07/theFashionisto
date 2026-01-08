@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from "react";
-import { motion } from "framer-motion";
-import { useSelector } from "react-redux";
-import { FaSearch, FaBell, FaExclamationCircle, FaBoxOpen, FaClipboardList } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
+import { useSelector, useDispatch } from "react-redux";
+import {
+    FaBell, FaExclamationCircle, FaClipboardList,
+    FaSearch, FaChevronDown, FaSignOutAlt, FaUserShield
+} from "react-icons/fa";
 import { useGetOrdersQuery } from "../../redux/api/orderApiSlice";
 import { useAllProductsQuery } from "../../redux/api/productApiSlice";
-import { Link, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useLogoutMutation } from "../../redux/api/userApiSlice";
 import { logout } from "../../redux/features/auth/authSlice";
 
@@ -13,10 +15,33 @@ const AdminHeader = ({ title, subtitle, children }) => {
     const { userInfo } = useSelector((state) => state.auth);
     const { data: allOrders } = useGetOrdersQuery();
     const { data: allProducts } = useAllProductsQuery();
-
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const location = useLocation();
     const [logoutApiCall] = useLogoutMutation();
+
+    const [showNotifications, setShowNotifications] = useState(false);
+    const [showUserMenu, setShowUserMenu] = useState(false);
+    const [lastReadCount, setLastReadCount] = useState(
+        parseInt(localStorage.getItem("adminNotificationReadCount") || "0")
+    );
+
+    const dropdownRef = useRef(null);
+    const userMenuRef = useRef(null);
+
+    const pendingOrders = allOrders?.filter((o) => o.orderStatus === "Pending" || (!o.isDelivered && !o.isPaid)).length || 0;
+    const lowStockCount = allProducts?.filter((p) => p.countInStock < 10).length || 0;
+    const notificationCount = pendingOrders + lowStockCount;
+    const hasNew = notificationCount > lastReadCount;
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setShowNotifications(false);
+            if (userMenuRef.current && !userMenuRef.current.contains(e.target)) setShowUserMenu(false);
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     const logoutHandler = async () => {
         try {
@@ -28,199 +53,169 @@ const AdminHeader = ({ title, subtitle, children }) => {
         }
     };
 
-    const [showNotifications, setShowNotifications] = useState(false);
-    // Use lastReadCount to persist the distinct count of notifications user has seen
-    const [lastReadCount, setLastReadCount] = useState(
-        parseInt(localStorage.getItem("adminNotificationReadCount") || "0")
-    );
-
-    const dropdownRef = useRef(null);
-
-    // Calculate Stats for Notifications
-    const pendingOrders = allOrders?.filter((o) => o.orderStatus === "Pending" || (!o.isDelivered && !o.isPaid)).length || 0;
-    const lowStockCount = allProducts?.filter((p) => p.countInStock < 10).length || 0;
-
-    const notificationCount = pendingOrders + lowStockCount;
-    // Show badge only if we have MORE notifications than what we last read
-    const showBadge = notificationCount > lastReadCount;
-
-    // Click outside to close
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setShowNotifications(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
-
     const markAsRead = () => {
         setLastReadCount(notificationCount);
         localStorage.setItem("adminNotificationReadCount", notificationCount);
         setShowNotifications(false);
     };
 
+    const breadcrumbs = location.pathname.split('/').filter(x => x).map(p => p.charAt(0).toUpperCase() + p.slice(1));
+
     return (
-        <div className="flex justify-between items-center py-6 px-8 bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
-            <div>
-                <h1 className="text-3xl font-serif font-bold text-gray-900">{title}</h1>
-                {subtitle && <p className="text-gray-500 mt-1">{subtitle}</p>}
+        <header className="sticky top-0 z-50 w-full bg-black border-b border-zinc-800 flex items-center justify-between px-6 py-4 lg:px-8">
+            <div className="flex flex-col">
+                <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">
+                    <span className="hover:text-red-500 cursor-pointer transition-colors">Admin</span>
+                    {breadcrumbs.map((b, i) => (
+                        <span key={i} className="flex items-center gap-2">
+                            <span className="text-zinc-700">/</span>
+                            <span className={i === breadcrumbs.length - 1 ? "text-red-500" : "text-zinc-400"}>{b}</span>
+                        </span>
+                    ))}
+                </div>
+                <h1 className="text-xl lg:text-2xl font-bold text-white tracking-tight">{title}</h1>
+                {subtitle && <p className="text-xs text-zinc-400 font-medium">{subtitle}</p>}
             </div>
 
-            <div className="flex items-center gap-6">
-                {/* Optional Search / Filters area passed as children if needed */}
-                {children && <div className="mr-4 text-gray-600">{children}</div>}
-
-                <div className="relative" ref={dropdownRef}>
-                    <button
-                        className="relative p-2 text-gray-500 hover:text-gray-700 transition-colors focus:outline-none"
-                        onClick={() => setShowNotifications(!showNotifications)}
-                    >
-                        <FaBell size={24} />
-                        {showBadge && notificationCount > 0 && (
-                            <span className="absolute top-1 right-2 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white"></span>
-                        )}
-                    </button>
-
-                    {/* Notification Dropdown */}
-                    {showNotifications && (
-                        <div className="absolute right-0 mt-3 w-80 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden transform transition-all duration-200 origin-top-right">
-                            <div className="px-4 py-3 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
-                                <h3 className="font-bold text-gray-700">Notifications</h3>
-                                {showBadge && notificationCount > 0 && (
-                                    <span className="bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full font-bold">{notificationCount - lastReadCount > 0 ? 'New' : notificationCount}</span>
-                                )}
-                            </div>
-
-                            <div className="max-h-96 overflow-y-auto">
-                                {notificationCount === 0 || !showBadge ? (
-                                    <div className="p-6 text-center text-gray-500 text-sm">
-                                        <div className="bg-gray-100 p-3 rounded-full inline-block mb-2">
-                                            <FaBell className="text-gray-300 text-xl" />
-                                        </div>
-                                        <p>No new notifications</p>
-                                    </div>
-                                ) : (
-                                    <>
-                                        {pendingOrders > 0 && (
-                                            <Link
-                                                to="/admin/orderList"
-                                                className="block p-4 hover:bg-[#649899]/10 transition-colors border-b border-gray-50"
-                                                onClick={() => setShowNotifications(false)}
-                                            >
-                                                <div className="flex items-start gap-3">
-                                                    <div className="p-2 bg-[#649899]/20 text-[#649899] rounded-lg mt-1">
-                                                        <FaClipboardList />
-                                                    </div>
-                                                    <div>
-                                                        <p className="font-semibold text-gray-800 text-sm">Pending Orders</p>
-                                                        <p className="text-xs text-gray-500 mt-1">
-                                                            Ordering processing required for {pendingOrders} orders.
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </Link>
-                                        )}
-
-                                        {lowStockCount > 0 && (
-                                            <Link
-                                                to="/admin/allProductsList"
-                                                className="block p-4 hover:bg-red-50 transition-colors"
-                                                onClick={() => setShowNotifications(false)}
-                                            >
-                                                <div className="flex items-start gap-3">
-                                                    <div className="p-2 bg-red-100 text-red-600 rounded-lg mt-1">
-                                                        <FaExclamationCircle />
-                                                    </div>
-                                                    <div>
-                                                        <p className="font-semibold text-gray-800 text-sm">Low Stock Alert</p>
-                                                        <p className="text-xs text-gray-500 mt-1">
-                                                            {lowStockCount} items are running low on stock. Restock soon.
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </Link>
-                                        )}
-                                    </>
-                                )}
-                            </div>
-
-                            {showBadge && notificationCount > 0 && (
-                                <div className="p-3 bg-gray-50 border-t border-gray-100 text-center">
-                                    <button
-                                        onClick={markAsRead}
-                                        className="text-xs font-semibold text-[#649899] hover:text-[#4A7A7B]"
-                                    >
-                                        Clear Notifications
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    )}
+            <div className="flex items-center gap-4 lg:gap-8">
+                {/* Search / Contextual Actions */}
+                <div className="hidden md:flex items-center gap-4">
+                    {children}
                 </div>
 
-                <div
-                    className="relative min-w-[160px] h-[50px] cursor-pointer"
-                    onMouseEnter={() => setShowNotifications(false)} // Optional: close notifications if open
-                >
-                    <motion.div
-                        className="w-full h-full"
-                        initial="initial"
-                        whileHover="hover"
-                    >
-                        <div className="relative w-full h-full">
-                            {/* User Profile (Default) */}
-                            <motion.div
-                                className="absolute inset-0 flex items-center gap-3 px-2"
-                                variants={{
-                                    initial: { opacity: 1, y: 0 },
-                                    hover: { opacity: 0, y: -20 }
-                                }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                {userInfo?.image ? (
-                                    <div className="h-10 w-10 relative rounded-full overflow-hidden border border-gray-200 shadow-md">
-                                        <img src={userInfo.image} alt={userInfo.username} className="w-full h-full object-cover transform scale-150" />
+                <div className="flex items-center gap-4 lg:gap-6 border-l border-zinc-800 pl-4 lg:pl-6">
+
+                    {/* Notification System */}
+                    <div className="relative" ref={dropdownRef}>
+                        <button
+                            onClick={() => setShowNotifications(!showNotifications)}
+                            className={`p-2 rounded-md transition-all duration-200 relative
+                                ${showNotifications ? 'text-red-500 bg-zinc-900' : 'text-zinc-400 hover:text-white hover:bg-zinc-900'}`}
+                        >
+                            <FaBell />
+                            {hasNew && notificationCount > 0 && (
+                                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-600 rounded-full border border-black"></span>
+                            )}
+                        </button>
+
+                        <AnimatePresence>
+                            {showNotifications && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    className="absolute right-0 mt-4 w-[320px] bg-zinc-900 rounded-md shadow-2xl border border-zinc-800 overflow-hidden"
+                                >
+                                    <div className="p-4 bg-black/40 border-b border-zinc-800 flex justify-between items-center">
+                                        <h3 className="font-bold text-xs uppercase tracking-wider text-white">System Alerts</h3>
+                                        <span className="bg-red-900/30 text-red-500 text-[10px] px-2 py-0.5 rounded border border-red-900/50 font-bold">
+                                            {notificationCount} New
+                                        </span>
                                     </div>
+
+                                    <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
+                                        {notificationCount === 0 ? (
+                                            <div className="p-8 text-center space-y-2">
+                                                <FaBell className="mx-auto text-zinc-700" size={20} />
+                                                <p className="text-xs text-zinc-400 font-medium">All systems operational</p>
+                                            </div>
+                                        ) : (
+                                            <div className="divide-y divide-zinc-800">
+                                                {pendingOrders > 0 && (
+                                                    <Link to="/admin/orderList" onClick={markAsRead} className="flex gap-4 p-4 hover:bg-zinc-800 transition-colors group">
+                                                        <div className="w-8 h-8 rounded bg-amber-900/20 text-amber-500 flex items-center justify-center shrink-0 border border-amber-900/30">
+                                                            <FaClipboardList />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-bold text-zinc-200 group-hover:text-amber-500 transition-colors">Pending Orders</p>
+                                                            <p className="text-[10px] text-zinc-400 mt-0.5">{pendingOrders} awaiting process</p>
+                                                        </div>
+                                                    </Link>
+                                                )}
+                                                {lowStockCount > 0 && (
+                                                    <Link to="/admin/allProductsList" onClick={markAsRead} className="flex gap-4 p-4 hover:bg-zinc-800 transition-colors group">
+                                                        <div className="w-8 h-8 rounded bg-red-900/20 text-red-500 flex items-center justify-center shrink-0 border border-red-900/30">
+                                                            <FaExclamationCircle />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-bold text-zinc-200 group-hover:text-red-500 transition-colors">Low Inventory</p>
+                                                            <p className="text-[10px] text-zinc-400 mt-0.5">{lowStockCount} items critical</p>
+                                                        </div>
+                                                    </Link>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {notificationCount > 0 && (
+                                        <button onClick={markAsRead} className="w-full py-3 text-[10px] font-bold uppercase tracking-wider text-zinc-400 hover:text-white hover:bg-zinc-800 border-t border-zinc-800 transition-colors">
+                                            Clear All
+                                        </button>
+                                    )}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
+                    {/* User Profile System */}
+                    <div className="relative" ref={userMenuRef}>
+                        <button
+                            onClick={() => setShowUserMenu(!showUserMenu)}
+                            className="flex items-center gap-3 p-1.5 pr-3 bg-zinc-900 rounded-full hover:bg-zinc-800 transition-all border border-zinc-800 group"
+                        >
+                            <div className="w-8 h-8 rounded-full border border-zinc-700 group-hover:border-red-500 transition-colors overflow-hidden">
+                                {userInfo?.image ? (
+                                    <img src={userInfo.image} alt={userInfo.username} className="w-full h-full object-cover" />
                                 ) : (
-                                    <div className="h-10 w-10 bg-gradient-to-tr from-[#649899] to-[#4A7A7B] rounded-full flex items-center justify-center text-white font-bold shadow-md uppercase">
+                                    <div className="w-full h-full flex items-center justify-center bg-zinc-800 text-zinc-400 font-bold text-xs uppercase">
                                         {userInfo?.username?.charAt(0) || 'A'}
                                     </div>
                                 )}
-                                <div className="hidden md:block">
-                                    <p className="text-sm font-semibold text-gray-800 capitalize truncate max-w-[100px]">{userInfo?.username || 'Admin'}</p>
-                                    <p className="text-xs text-gray-500">
-                                        {userInfo?.isSuperAdmin ? "Super Admin" : (userInfo?.isAdmin ? "Administrator" : "User")}
-                                    </p>
-                                </div>
-                            </motion.div>
+                            </div>
+                            <div className="hidden lg:block text-left">
+                                <p className="text-xs font-bold text-zinc-200 group-hover:text-white transition-colors capitalize">{userInfo?.username || 'Admin'}</p>
+                            </div>
+                            <FaChevronDown size={10} className={`text-zinc-400 transition-transform duration-300 ml-1 ${showUserMenu ? 'rotate-180' : ''}`} />
+                        </button>
 
-                            {/* Logout Button (Hover) */}
-                            <motion.button
-                                onClick={logoutHandler}
-                                className="absolute inset-0 flex items-center gap-3 px-2 w-full h-full bg-white"
-                                variants={{
-                                    initial: { opacity: 0, y: 20, pointerEvents: "none" },
-                                    hover: { opacity: 1, y: 0, pointerEvents: "auto" }
-                                }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                <div className="h-10 w-10 bg-gradient-to-tr from-[#649899] to-[#4A7A7B] rounded-full flex items-center justify-center text-white shadow-md">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                    </svg>
-                                </div>
-                                <div className="hidden md:block text-left">
-                                    <p className="text-sm font-semibold text-gray-800">Logout</p>
-                                    <p className="text-xs text-gray-500">See you later</p>
-                                </div>
-                            </motion.button>
-                        </div>
-                    </motion.div>
+                        <AnimatePresence>
+                            {showUserMenu && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    className="absolute right-0 mt-4 w-56 bg-zinc-900 rounded-md shadow-2xl border border-zinc-800 overflow-hidden"
+                                >
+                                    <div className="p-4 bg-black/40 border-b border-zinc-800">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded bg-teal-900/20 text-teal-500 flex items-center justify-center border border-teal-900/30">
+                                                <FaUserShield size={14} />
+                                            </div>
+                                            <div>
+                                                <p className="text-xs font-bold uppercase text-white leading-none">Admin Portal</p>
+                                                <p className="text-[10px] text-zinc-400 mt-1">Secure Session</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="p-2">
+                                        <Link to="/profile" className="flex items-center gap-3 p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition-colors text-xs font-bold uppercase tracking-wide">
+                                            <FaUserShield /> Profile
+                                        </Link>
+                                        <button
+                                            onClick={logoutHandler}
+                                            className="w-full flex items-center gap-3 p-2 text-red-500 hover:bg-zinc-800 rounded transition-colors text-xs font-bold uppercase tracking-wide"
+                                        >
+                                            <FaSignOutAlt /> Sign Out
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
                 </div>
             </div>
-        </div>
+        </header>
     );
 };
 

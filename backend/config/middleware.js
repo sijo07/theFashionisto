@@ -22,7 +22,7 @@ const configureMiddleware = (app) => {
   // Rate limiting for protection
   const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // max requests per IP
+    max: 10000, // max requests per IP
     standardHeaders: true, // Return rate limit info in headers
     legacyHeaders: false,
   });

@@ -1,253 +1,197 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import Loader from "../../components/loader";
-import { setCredentials } from "../../redux/features/auth/authSlice";
 import { toast } from "react-toastify";
-import { useUpdateProfileMutation, useGetProfileQuery } from "../../redux/api/userApiSlice";
-import { useUploadProductImageMutation } from "../../redux/api/productApiSlice";
-import { MdVisibility, MdVisibilityOff } from "react-icons/md";
-import fashion1 from "../../assets/avatars/fashion_avatar_1.png";
-import fashion2 from "../../assets/avatars/fashion_avatar_2.png";
-import fashion3 from "../../assets/avatars/fashion_avatar_3.png";
-import fashion4 from "../../assets/avatars/fashion_avatar_4.png";
-import fashion5 from "../../assets/avatars/fashion_avatar_5.png";
-import fashion6 from "../../assets/avatars/fashion_avatar_6.png";
+import Loader from "../../components/loader";
+import { useGetProfileQuery, useUpdateProfileMutation } from "../../redux/api/userApiSlice";
+import { setCredentials } from "../../redux/features/auth/authSlice";
+import { FaUser, FaEnvelope, FaLock, FaCamera, FaSave, FaSignOutAlt } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 const Profile = () => {
-  const [username, setUserName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
-  const [image, setImage] = useState("");
-  const [gender, setGender] = useState("");
-  const [dob, setDob] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [image, setImage] = useState("");
+  const [imagePreview, setImagePreview] = useState(null);
 
   const { userInfo } = useSelector((state) => state.auth);
+  const { data: userProfile, isLoading: loadingProfile } = useGetProfileQuery();
 
-  const { data: userProfile, refetch } = useGetProfileQuery();
-  const [uploadProductImage, { isLoading: loadingUpload }] = useUploadProductImageMutation();
-
-  const [updateProfile, { isLoading: loadingUpdateProfile }] =
-    useUpdateProfileMutation();
+  const [updateProfile, { isLoading: loadingUpdate }] = useUpdateProfileMutation();
 
   useEffect(() => {
-    const userData = userProfile || userInfo;
-    if (userData) {
-      setUserName(userData.username);
-      setPhone(userData.phone);
-      setEmail(userData.email);
-      setImage(userData.image || "");
-      setGender(userData.gender || "");
-      if (userData.dateOfBirth) {
-        setDob(new Date(userData.dateOfBirth).toISOString().split('T')[0]);
-      }
+    if (userProfile) {
+      setUsername(userProfile.username);
+      setEmail(userProfile.email);
+      setImage(userProfile.image || "");
     }
-  }, [userProfile, userInfo]);
+  }, [userProfile]);
 
   const dispatch = useDispatch();
 
-  const uploadFileHandler = async (e) => {
-    const formData = new FormData();
-    formData.append("image", e.target.files[0]);
-    try {
-      const res = await uploadProductImage(formData).unwrap();
-      toast.success("Image uploaded successfully");
-      setImage(res.url);
-    } catch (err) {
-      toast.error(err?.data?.message || err.error);
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+        setImage(reader.result); // In a real app, you might upload first or send base64
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   const submitHandler = async (e) => {
     e.preventDefault();
-
-    if (!password) {
-      toast.error("Please enter your current password to save changes");
-      return;
-    }
-
-    try {
-      const res = await updateProfile({
-        _id: userInfo._id,
-        username,
-        phone,
-        email,
-        image,
-        gender,
-        dateOfBirth: dob,
-        password,
-      }).unwrap();
-      dispatch(setCredentials({ ...res }));
-      toast.success("Profile updated successfully");
-      setPassword(""); // Clear password after success
-      refetch(); // Refetch profile data
-    } catch (error) {
-      // Handle validation errors from the backend
-      if (error?.data?.errors) {
-        // Display all validation errors
-        error.data.errors.forEach(err => {
-          toast.error(err.message);
-        });
-      } else {
-        toast.error(error?.data?.message || error.message || "An error occurred");
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
+    } else {
+      try {
+        const res = await updateProfile({
+          _id: userInfo._id,
+          username,
+          email,
+          password,
+          image, // Sending base64 or url
+        }).unwrap();
+        dispatch(setCredentials({ ...res }));
+        toast.success("Profile updated successfully");
+        setPassword("");
+        setConfirmPassword("");
+      } catch (err) {
+        toast.error(err?.data?.message || err.error);
       }
     }
   };
 
+  const inputClass = "w-full bg-zinc-900 border border-zinc-800 text-white text-sm font-medium rounded-sm px-4 py-3 focus:border-red-600 focus:outline-none placeholder:text-zinc-600 transition-colors";
+  const labelClass = "block text-xs font-bold uppercase tracking-widest text-zinc-400 mb-2";
+
+  if (loadingProfile) return <div className="min-h-screen bg-black flex items-center justify-center"><Loader /></div>;
+
   return (
-    <>
-      <div className="w-full bg-gray-50">
-        <div className="lg:w-2/5 mx-auto text-center">
-          <div className="flex flex-col md:flex-row">
-            <div className="w-full h-full">
-              <div className="py-10">
-                <h2 className="text-3xl font-bold capitalize text-teal-800 mb-2">
-                  Update profile
-                </h2>
-                <div className="border-2 w-10 border-teal-800 inline-block mb-2"></div>
-                <div className="flex flex-col items-center">
-                  <form onSubmit={submitHandler}>
-                    <div className="p-4 flex flex-col items-center">
-                      {image ? (
-                        <div className="mb-4 relative w-24 h-24 rounded-full overflow-hidden border-2 border-teal-800">
-                          <img src={image} alt="Profile" className="w-full h-full object-cover transform scale-150" />
-                        </div>
-                      ) : (
-                        <div className="mb-4 w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold border-2 border-teal-800">
-                          No Img
-                        </div>
-                      )}
-                      <div className="relative">
-                        <label className="bg-teal-800 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-teal-700 transition-colors text-sm font-semibold capitalize">
-                          {image ? "Change Photo" : "Upload Photo"}
-                          <input type="file" accept="image/*" onChange={uploadFileHandler} className="hidden" />
-                        </label>
-                        {loadingUpload && <Loader />}
-                      </div>
+    <div className="min-h-screen bg-black text-white pt-24 pb-20">
+      <div className="max-w-4xl mx-auto px-6">
 
-                      {/* Predefined Avatars */}
-                      <div className="mt-6 w-full">
-                        <h3 className="text-sm font-semibold text-gray-700 mb-3 text-center">Or Choose an Avatar</h3>
-                        <div className="flex justify-center gap-4 flex-wrap">
-                          {[
-                            fashion1,
-                            fashion2,
-                            fashion3,
-                            fashion4,
-                            fashion5,
-                            fashion6,
-                          ].map((avatarUrl, index) => (
-                            <div
-                              key={index}
-                              onClick={() => setImage(avatarUrl)}
-                              className={`relative w-16 h-16 rounded-full overflow-hidden cursor-pointer transition-transform duration-300 hover:scale-110 border-2 ${image === avatarUrl ? "border-teal-600 scale-110 shadow-md" : "border-transparent"}`}
-                            >
-                              <img
-                                src={avatarUrl}
-                                alt={`Avatar ${index}`}
-                                className="w-full h-full object-cover transform scale-150"
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
+        <div className="flex flex-col md:flex-row gap-8 items-start">
 
-                    <div className="p-4">
-                      <input
-                        type="text"
-                        value={username}
-                        placeholder="Name"
-                        autoComplete="username"
-                        className="bg-gray-100 w-64 p-2 border-2 rounded-lg flex focus:outline-none border-blur-200"
-                        onChange={(e) => setUserName(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="p-4">
-                      <input
-                        type="tel"
-                        value={phone}
-                        placeholder="Phone"
-                        autoComplete="tel"
-                        className="bg-gray-100 w-64 p-2 border-2 rounded-lg flex focus:outline-none border-blur-200"
-                        onChange={(e) => setPhone(e.target.value)}
-                      />
-                    </div>
-                    <div className="p-4">
-                      <input
-                        type="email"
-                        value={email}
-                        placeholder="Email"
-                        autoComplete="email"
-                        className="bg-gray-100 w-64 p-2 border-2 rounded-lg flex focus:outline-none border-blur-200"
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="p-4">
-                      <select
-                        value={gender}
-                        onChange={(e) => setGender(e.target.value)}
-                        className="bg-gray-100 w-64 p-2 border-2 rounded-lg flex focus:outline-none border-blur-200 text-gray-700"
-                      >
-                        <option value="">Select Gender</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Other">Other</option>
-                      </select>
-                    </div>
-                    <div className="p-4">
-                      <input
-                        type="date"
-                        value={dob}
-                        onChange={(e) => setDob(e.target.value)}
-                        className="bg-gray-100 w-64 p-2 border-2 rounded-lg flex focus:outline-none border-blur-200 text-gray-700"
-                        placeholder="Date of Birth"
-                      />
-                    </div>
-                    <div className="p-4 relative">
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        value={password}
-                        placeholder="Current Password (to save changes)"
-                        autoComplete="current-password"
-                        className="bg-gray-100 w-64 p-2 pr-10 border-2 rounded-lg flex focus:outline-none border-blur-200"
-                        onChange={(e) => setPassword(e.target.value)}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 pr-6 flex items-center text-gray-500"
-                      >
-                        {showPassword ? <MdVisibilityOff /> : <MdVisibility />}
-                      </button>
-                    </div>
-                    <div className="flex justify-between w-64 pl-5">
-                      <Link
-                        to="/changePassword"
-                        className="text-xs capitalize underline text-teal-800"
-                      >
-                        !change password
-                      </Link>
-                    </div>
-                    <button
-                      type="submit"
-                      className="group my-4 bg-teal-800 text-white px-8 py-2 font-bold capitalize rounded-full tracking-wider cursor-pointer hover:scale-105 duration-200"
-                    >
-                      Update
-                    </button>
-                  </form>
-                </div>
-                {loadingUpdateProfile && <Loader />}
+          {/* Sidebar / Navigation */}
+          <div className="w-full md:w-64 bg-zinc-950 border border-zinc-800 p-6 rounded-sm">
+            <div className="flex flex-col items-center mb-8">
+              <div className="w-24 h-24 rounded-full border-2 border-zinc-800 overflow-hidden mb-4 relative group">
+                <img
+                  src={imagePreview || image || `https://ui-avatars.com/api/?name=${username}&background=EF4444&color=fff`}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+                <label className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                  <FaCamera className="text-white" />
+                  <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+                </label>
               </div>
+              <h2 className="text-lg font-bold text-white">{username}</h2>
+              <p className="text-xs text-zinc-500">{email}</p>
             </div>
+
+            <nav className="space-y-2">
+              <Link to="/profile" className="block px-4 py-2 bg-red-600 text-white text-xs font-bold uppercase tracking-wider rounded-sm">
+                Account Settings
+              </Link>
+              <Link to="/user-orders" className="block px-4 py-2 text-zinc-400 hover:text-white hover:bg-zinc-900 text-xs font-bold uppercase tracking-wider rounded-sm transition-colors">
+                Order History
+              </Link>
+              <button className="w-full text-left px-4 py-2 text-zinc-400 hover:text-red-500 hover:bg-zinc-900 text-xs font-bold uppercase tracking-wider rounded-sm transition-colors flex items-center gap-2 mt-8">
+                <FaSignOutAlt /> Sign Out
+              </button>
+            </nav>
           </div>
+
+          {/* Main Content */}
+          <div className="flex-1 bg-zinc-950 border border-zinc-800 p-8 rounded-sm w-full">
+            <h1 className="text-xl font-black uppercase tracking-tight text-white mb-8 flex items-center gap-3">
+              <FaUser className="text-red-600" /> Account Settings
+            </h1>
+
+            <form onSubmit={submitHandler} className="space-y-6">
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className={labelClass}>Username</label>
+                  <div className="relative">
+                    <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={12} />
+                    <input
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className={`${inputClass} pl-10`}
+                      placeholder="Enter username"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className={labelClass}>Email Address</label>
+                  <div className="relative">
+                    <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={12} />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className={`${inputClass} pl-10`}
+                      placeholder="Enter email"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-zinc-900">
+                <h3 className="text-sm font-bold text-zinc-300 uppercase tracking-wider mb-6">Security</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className={labelClass}>New Password</label>
+                    <div className="relative">
+                      <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={12} />
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className={`${inputClass} pl-10`}
+                        placeholder="Min 6 characters"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Confirm Password</label>
+                    <div className="relative">
+                      <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={12} />
+                      <input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className={`${inputClass} pl-10`}
+                        placeholder="Re-enter password"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-8 flex justify-end">
+                <button
+                  type="submit"
+                  disabled={loadingUpdate}
+                  className="px-8 py-3 bg-white text-black font-bold uppercase tracking-widest text-xs hover:bg-red-600 hover:text-white transition-all flex items-center gap-2"
+                >
+                  {loadingUpdate ? "Updating..." : <><FaSave /> Save Changes</>}
+                </button>
+              </div>
+
+            </form>
+          </div>
+
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

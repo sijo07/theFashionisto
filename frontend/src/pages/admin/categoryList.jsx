@@ -6,10 +6,16 @@ import {
   useFetchCategoriesQuery,
 } from "../../redux/api/categoryApiSlice";
 import { toast } from "react-toastify";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  FaEdit, FaTrash, FaPlus, FaFolder,
+  FaFolderOpen, FaLayerGroup, FaSitemap,
+  FaChevronRight, FaTimes
+} from "react-icons/fa";
 import CategoryForm from "../../components/CategoryForm";
 import Modal from "../../components/Modal";
 import AdminHeader from "./AdminHeader";
-import { FaEdit, FaTrash, FaPlus, FaFolder, FaFolderOpen, FaLayerGroup } from "react-icons/fa";
+import Loader from "../../components/loader";
 
 const CategoryList = () => {
   const { data: categories, refetch } = useFetchCategoriesQuery();
@@ -17,8 +23,6 @@ const CategoryList = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [updatingName, setUpdatingName] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
-
-  // New state for 3-level hierarchy
   const [parent, setParent] = useState("");
 
   const [createCategory] = useCreateCategoryMutation();
@@ -31,10 +35,7 @@ const CategoryList = () => {
 
   const handleCreateCategory = async (e) => {
     e.preventDefault();
-    if (!name) {
-      toast.error("Category name is required");
-      return;
-    }
+    if (!name) return toast.error("Category name required");
 
     try {
       const result = await createCategory({
@@ -47,116 +48,117 @@ const CategoryList = () => {
       } else {
         setName("");
         setParent("");
-        toast.success(`${result.name} is created.`);
+        toast.success(`Category "${result.name}" created.`);
         refetch();
       }
     } catch (error) {
-      console.error(error);
-      toast.error("Creating category failed, try again.");
+      toast.error("Initialization sequence failed.");
     }
   };
 
   const handleUpdateCategory = async (e) => {
     e.preventDefault();
-    if (!updatingName) {
-      toast.error("Category name is required");
-      return;
-    }
+    if (!updatingName) return toast.error("Name cannot be empty");
 
     try {
       const result = await updateCategory({
         categoryId: selectedCategory._id,
-        updatedCategory: {
-          name: updatingName,
-        },
+        updatedCategory: { name: updatingName },
       }).unwrap();
 
       if (result.error) {
         toast.error(result.error);
       } else {
-        toast.success(`${result.name} is updated`);
+        toast.success("Category updated.");
         setSelectedCategory(null);
         setUpdatingName("");
         setModalVisible(false);
         refetch();
       }
     } catch (error) {
-      console.error(error);
-      toast.error("Category update failed. Try again.");
+      toast.error("Update failed.");
     }
   };
 
   const handleDeleteCategory = async () => {
+    if (!window.confirm("Delete selected category and all its items?")) return;
     try {
       const result = await deleteCategory(selectedCategory._id).unwrap();
-
       if (result.error) {
         toast.error(result.error);
       } else {
-        toast.success(`${result.name} is deleted.`);
+        toast.success("Category deleted successfully.");
         setSelectedCategory(null);
         setModalVisible(false);
         refetch();
       }
     } catch (error) {
-      console.error(error);
-      toast.error("Category deletion failed. Try again.");
+      toast.error("Purge aborted.");
     }
   };
 
-  // Helper to filter categories by level
   const superCategories = categories?.filter((c) => !c.parent) || [];
+  const getSubCategories = (parentId) => categories?.filter((c) => c.parent === parentId) || [];
 
-  const getSubCategories = (parentId) => {
-    return categories?.filter((c) => c.parent === parentId) || [];
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/50 pb-20 font-sans text-gray-900">
-      <AdminHeader title="Manage Categories" subtitle="Organize your product hierarchy (Super > Main > Sub)">
-        {/* No extra actions needed yet */}
+    <div className="min-h-screen bg-[#FDFEFE] font-sans text-gray-900 pb-20 overflow-x-hidden">
+      <AdminHeader title="Hierarchy Architecture" subtitle="Organize your ecosystem across Super, Main, and Sub levels.">
+        <div className="hidden lg:flex items-center gap-2 px-4 py-2 bg-teal-50 rounded-full border border-teal-100">
+          <FaSitemap className="text-teal-600" size={12} />
+          <span className="text-[10px] font-black text-teal-600 uppercase tracking-widest">Active Tree View</span>
+        </div>
       </AdminHeader>
 
-      <div className="p-8 max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="p-6 lg:p-10 max-w-[1700px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10">
 
-        {/* CREATE FORM */}
-        <div className="lg:col-span-4 transition-all">
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 sticky top-8">
-            <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <FaPlus className="text-gold" /> Create Category
-            </h2>
-            <form onSubmit={handleCreateCategory} className="space-y-4">
+        {/* Creation Sidebar */}
+        <div className="lg:col-span-4">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-2xl shadow-gray-200/40 sticky top-28"
+          >
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-12 h-12 rounded-2xl bg-teal-600 text-white flex items-center justify-center shadow-lg shadow-teal-500/30">
+                <FaPlus />
+              </div>
               <div>
-                <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Parent Category (Optional)</label>
+                <h3 className="text-xl font-black tracking-tight">Category Creator</h3>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">New Entry</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleCreateCategory} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Connectivity Parent</label>
                 <select
-                  className="w-full bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-gold focus:border-gold block p-2.5"
+                  className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 text-sm font-bold text-gray-700 focus:ring-4 focus:ring-teal-500/10 cursor-pointer"
                   value={parent}
                   onChange={(e) => setParent(e.target.value)}
                 >
-                  <option value="">None (Super Category)</option>
-
-                  {/* Level 1: Super Categories */}
-                  {superCategories.map((superCat) => (
-                    <optgroup key={superCat._id} label={superCat.name}>
-                      <option value={superCat._id}>-- Create under {superCat.name} (Main) - {superCat.categoryId}</option>
-
-                      {/* Level 2: Main Categories (to create Sub) */}
-                      {getSubCategories(superCat._id).map((mainCat) => (
-                        <option key={mainCat._id} value={mainCat._id}>
-                          &nbsp;&nbsp;&nbsp;&nbsp;---- {mainCat.name} (Sub) - {mainCat.categoryId}
-                        </option>
+                  <option value="">ROOT (NO PARENT)</option>
+                  {superCategories.map((s) => (
+                    <optgroup key={s._id} label={s.name.toUpperCase()}>
+                      <option value={s._id}>-- UNDER {s.name}</option>
+                      {getSubCategories(s._id).map(m => (
+                        <option key={m._id} value={m._id}>&nbsp;&nbsp;&nbsp;↳ {m.name}</option>
                       ))}
                     </optgroup>
                   ))}
                 </select>
               </div>
 
-              <div>
-                <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Category Name</label>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Category Title</label>
                 <input
                   type="text"
-                  className="w-full bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-gold focus:border-gold block p-2.5"
-                  placeholder="e.g. Men, Topwear, Shirts"
+                  className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 text-sm font-bold text-gray-700 focus:ring-4 focus:ring-teal-500/10 transition-all placeholder:text-gray-300"
+                  placeholder="e.g. LUXURY_OUTERWEAR"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
@@ -164,127 +166,129 @@ const CategoryList = () => {
 
               <button
                 type="submit"
-                className="w-full text-white bg-gradient-to-r from-gold-dark to-gold hover:from-gold hover:to-gold-light font-bold rounded-lg text-sm px-5 py-2.5 text-center shadow-md transition-all"
+                className="w-full py-4 bg-gray-900 hover:bg-teal-950 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl transition-all hover:-translate-y-1 active:scale-95"
               >
-                Create Category
+                Confirm Entry
               </button>
             </form>
-          </div>
+          </motion.div>
         </div>
 
-        {/* CATEGORY TREE / LIST */}
-        <div className="lg:col-span-8 space-y-6">
-          {/* Loop through Super Categories */}
-          {superCategories.map((superCat) => (
-            <div key={superCat._id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-6">
-              {/* Header: Super Category */}
-              <div className="bg-gray-50/50 p-4 border-b border-gray-100 flex justify-between items-center group hover:bg-white transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-gold/10 text-gold rounded-lg">
-                    <FaLayerGroup />
-                  </div>
-                  <h3 className="font-display font-bold text-lg text-gray-800">
-                    {superCat.name}
-                    {superCat.categoryId && <span className="ml-2 text-xs font-mono text-gray-400">({superCat.categoryId})</span>}
-                  </h3>
-                  <span className="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-mono uppercase">Super</span>
-                </div>
-                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button
-                    onClick={() => {
-                      setModalVisible(true);
-                      setSelectedCategory(superCat);
-                      setUpdatingName(superCat.name);
-                    }}
-                    className="p-2 text-gray-400 hover:text-gold transition-colors"
-                  >
-                    <FaEdit />
-                  </button>
-                  <button
-                    onClick={() => {
-                      setSelectedCategory(superCat);
-                      setModalVisible(true); // Re-use modal for delete confirmation logic if distinct? Or reuse generic delete logic
-                      // For now, modal handles update. Delete button separate?
-                      // Let's rely on the Update Modal having a delete button or add direct delete here
-                      // Implementing direct delete check is risky without confirm, but handleDeleteCategory uses selectedCategory.
-                      // Let's use the modal which usually has both actions in this template.
-                    }}
-                    className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                  >
-                    {/* Handled in Modal usually */}
-                  </button>
-                </div>
-              </div>
-
-              {/* Main Categories Grid */}
-              <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                {getSubCategories(superCat._id).map((mainCat) => (
-                  <div key={mainCat._id} className="border border-gray-200 rounded-lg p-3 hover:border-gold/30 hover:shadow-sm transition-all bg-gray-50/30">
-                    <div className="flex justify-between items-center mb-2">
-                      <h4 className="font-bold text-gray-700 flex items-center gap-2">
-                        <FaFolderOpen className="text-gold-dark/70 text-sm" />
-                        {mainCat.name}
-                        {mainCat.categoryId && <span className="ml-2 text-[10px] font-mono text-gray-400">({mainCat.categoryId})</span>}
-                      </h4>
-                      <button
-                        onClick={() => {
-                          setModalVisible(true);
-                          setSelectedCategory(mainCat);
-                          setUpdatingName(mainCat.name);
-                        }}
-                        className="text-gray-400 hover:text-gold text-xs"
-                      >
-                        <FaEdit />
-                      </button>
+        {/* Hierarchy Visualization */}
+        <div className="lg:col-span-8 space-y-8">
+          {categories ? (
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="space-y-8"
+            >
+              {superCategories.map((superCat) => (
+                <motion.div
+                  key={superCat._id}
+                  className="bg-white rounded-[3rem] border border-gray-100 shadow-2xl shadow-gray-200/30 overflow-hidden group"
+                >
+                  {/* Level 1: Main Category */}
+                  <div className="p-8 bg-gray-50/50 border-b border-gray-100 flex justify-between items-center group-hover:bg-teal-50/10 transition-colors">
+                    <div className="flex items-center gap-5">
+                      <div className="w-14 h-14 rounded-2xl bg-teal-600 text-white flex items-center justify-center shadow-lg shadow-teal-500/20">
+                        <FaLayerGroup size={20} />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-black text-gray-900 tracking-tight uppercase leading-none">{superCat.name}</h3>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="px-2 py-0.5 bg-gray-200 text-gray-600 rounded text-[9px] font-black uppercase tracking-tighter">Main Category</span>
+                          <span className="text-[10px] font-mono text-gray-400">UUID: {superCat.categoryId || superCat._id.substring(0, 8)}</span>
+                        </div>
+                      </div>
                     </div>
+                    <button
+                      onClick={() => { setSelectedCategory(superCat); setUpdatingName(superCat.name); setModalVisible(true); }}
+                      className="p-3 text-gray-300 hover:text-teal-600 transition-colors bg-white rounded-xl border border-gray-100"
+                    >
+                      <FaEdit />
+                    </button>
+                  </div>
 
-                    {/* Sub Categories List */}
-                    <div className="pl-6 space-y-1">
-                      {getSubCategories(mainCat._id).length === 0 && (
-                        <p className="text-xs text-gray-400 italic">No sub-categories</p>
-                      )}
-                      {getSubCategories(mainCat._id).map((subCat) => (
-                        <div key={subCat._id} className="flex justify-between items-center group/sub">
-                          <span className="text-sm text-gray-600 flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
-                            {subCat.name}
-                            {subCat.categoryId && <span className="ml-1 text-[10px] font-mono text-gray-400">({subCat.categoryId})</span>}
-                          </span>
+                  {/* Level 2: Categories Grid */}
+                  <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6 bg-white">
+                    {getSubCategories(superCat._id).map((mainCat) => (
+                      <div key={mainCat._id} className="p-6 rounded-3xl border border-gray-100 bg-gray-50/30 hover:border-teal-300 hover:bg-white hover:shadow-xl hover:shadow-teal-500/5 transition-all">
+                        <div className="flex justify-between items-start mb-6">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+                              <FaFolderOpen />
+                            </div>
+                            <h4 className="font-black text-sm text-gray-900 uppercase tracking-tight">{mainCat.name}</h4>
+                          </div>
                           <button
-                            onClick={() => {
-                              setModalVisible(true);
-                              setSelectedCategory(subCat);
-                              setUpdatingName(subCat.name);
-                            }}
-                            className="text-gray-300 hover:text-gold text-[10px] opacity-0 group-hover/sub:opacity-100 transition-opacity"
+                            onClick={() => { setSelectedCategory(mainCat); setUpdatingName(mainCat.name); setModalVisible(true); }}
+                            className="text-gray-300 hover:text-blue-600 text-xs"
                           >
-                            Edit
+                            <FaEdit />
                           </button>
                         </div>
-                      ))}
-                    </div>
+
+                        {/* Level 3: Sub-categories List */}
+                        <div className="space-y-3 pl-4 border-l-2 border-dashed border-gray-100">
+                          {getSubCategories(mainCat._id).length === 0 && <p className="text-[10px] font-bold text-gray-300 uppercase tracking-widest italic">No Sub-categories Yet</p>}
+                          {getSubCategories(mainCat._id).map(subCat => (
+                            <div key={subCat._id} className="flex justify-between items-center py-1 group/sub">
+                              <div className="flex items-center gap-3">
+                                <FaChevronRight className="text-gray-200 group-hover/sub:text-teal-500 transition-colors" size={8} />
+                                <span className="text-xs font-bold text-gray-500 group-hover/sub:text-gray-900 transition-colors uppercase tracking-tighter">{subCat.name}</span>
+                              </div>
+                              <button
+                                onClick={() => { setSelectedCategory(subCat); setUpdatingName(subCat.name); setModalVisible(true); }}
+                                className="opacity-0 group-hover/sub:opacity-100 text-[10px] font-black text-teal-600 uppercase hover:underline"
+                              >
+                                Edit
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+
+                    {getSubCategories(superCat._id).length === 0 && (
+                      <div className="col-span-full py-10 flex flex-col items-center justify-center text-center opacity-40">
+                        <FaFolder size={30} className="text-gray-200 mb-2" />
+                        <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Main Tier Depleted</p>
+                      </div>
+                    )}
                   </div>
-                ))}
-                {getSubCategories(superCat._id).length === 0 && (
-                  <div className="col-span-full text-center py-6 text-gray-400 italic">
-                    No Main Categories. Create one linked to {superCat.name}.
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : <Loader />}
         </div>
       </div>
 
-      <Modal isOpen={modalVisible} onClose={() => setModalVisible(false)}>
-        <CategoryForm
-          value={updatingName}
-          setValue={(value) => setUpdatingName(value)}
-          handleSubmit={handleUpdateCategory}
-          buttonText="Update"
-          handleDelete={handleDeleteCategory}
-        />
-      </Modal>
+      <AnimatePresence>
+        {modalVisible && (
+          <Modal isOpen={modalVisible} onClose={() => setModalVisible(false)}>
+            <div className="p-8">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center">
+                  <FaEdit size={24} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">Edit Information</h3>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Active UUID: {selectedCategory?._id?.substring(0, 12)}</p>
+                </div>
+              </div>
+
+              <CategoryForm
+                value={updatingName}
+                setValue={(value) => setUpdatingName(value)}
+                handleSubmit={handleUpdateCategory}
+                buttonText="Deploy Changes"
+                handleDelete={handleDeleteCategory}
+              />
+            </div>
+          </Modal>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

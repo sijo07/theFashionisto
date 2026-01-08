@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { addToCart, removeFromCart, recalculatePrice } from "../redux/features/cart/cartSlice";
 import { addToFavorites } from "../redux/features/favorites/favoriteSlice";
 import { useState, useEffect } from "react";
+import { FaTrash, FaHeart, FaArrowRight, FaMinus, FaPlus } from "react-icons/fa";
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -50,10 +51,6 @@ const Cart = () => {
     dispatch(recalculatePrice());
   }, [cartItems, dispatch]);
 
-  /* 
-    Calculate Total MRP based on the higher of Price vs Offer.
-    This represents the "Original Price" sum.
-  */
   const totalMRP = cartItems.reduce(
     (acc, item) => {
       const price = Number(item.price);
@@ -64,10 +61,6 @@ const Cart = () => {
     0
   );
 
-  /* 
-    Strict Local Calculation for Display to guarantee freshness irrespective of Redux latency.
-    We ignore cart.itemsPrice for display to ensure it matches the rendered items.
-  */
   const totalAmount = cartItems.reduce((acc, item) => {
     const price = Number(item.price);
     const offer = Number(item.offer) || 0;
@@ -77,145 +70,169 @@ const Cart = () => {
 
   const totalDiscount = totalMRP - totalAmount;
 
-  useEffect(() => {
-    dispatch(recalculatePrice());
-  }, [dispatch]);
-
   return (
-    <div className="mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl relative">
-      <div className="p-5">
-        <div className="text-sm text-gray-600 mb-4">
-          <Link to="/" className="hover:underline">
-            HOME&nbsp;
+    <div className="bg-black min-h-screen text-white pt-32 pb-20">
+      <div className="max-w-[1440px] mx-auto px-6">
+
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-end mb-16 border-b border-zinc-900 pb-8">
+          <div>
+            <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-2">
+              Your <span className="text-red-600">Selection</span>
+            </h1>
+            <p className="text-zinc-500 font-medium font-mono text-sm">
+              [{cartItems.reduce((acc, item) => acc + item.qty, 0)}] ITEMS RESERVED
+            </p>
+          </div>
+          <Link to="/shop" className="hidden md:flex items-center gap-2 text-sm font-bold uppercase tracking-widest hover:text-red-500 transition-colors">
+            Continue Shopping <FaArrowRight />
           </Link>
-          <Link to="/shop" className="hover:underline uppercase">
-            /&nbsp;Shop&nbsp;
-          </Link>
-          /&nbsp;<span className="font-bold">SHOPPING CART</span>
         </div>
-        <div className="max-w-xl mx-auto">
-          {cartItems.length === 0 ? (
-            <div className="text-center text-gray-400 hover:font-semibold hover:underline capitalize">
-              oops! cart is empty <Link to="/shop">Go To Shop</Link>
-            </div>
-          ) : (
-            <>
+
+        {cartItems.length === 0 ? (
+          <div className="text-center py-32 border border-dashed border-zinc-900 rounded-sm">
+            <h2 className="text-2xl font-bold uppercase tracking-widest text-zinc-600 mb-4">Bag is Empty</h2>
+            <Link to="/shop" className="inline-block bg-white text-black px-8 py-3 font-bold uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all duration-300">
+              Start Shopping
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
+
+            {/* Cart Items List */}
+            <div className="lg:col-span-2 space-y-8">
               {cartItems.map((item) => (
-                <div key={item._id} className="flex items-start mb-4">
-                  <img
-                    src={item.image?.url || item.image}
-                    alt={item.brand}
-                    className="w-24 h-24 object-cover rounded"
-                  />
-                  <div className="ml-4 flex-grow">
-                    <p className="font-bold">{item.brand}</p>
-                    <p className="text-sm text-gray-600">{item.description}</p>
-                    <p className="text-xs text-gray-500 font-semibold mt-1">Size: <span className="text-black">{item.size}</span></p>
-                    <div className="flex items-center mt-2 space-x-4">
-                      <div className="flex items-center space-x-2">
-                        <label className="text-sm font-semibold text-gray-700">
-                          Qty:
-                        </label>
-                        <div className="relative inline-block">
-                          <select
-                            className="border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-800 appearance-none text-center leading-6 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition duration-200 ease-in-out"
-                            value={item.qty}
-                            onChange={(e) =>
-                              addToCartHandler(item, Number(e.target.value))
-                            }
-                          >
-                            {[
-                              ...Array(Math.min(item.countInStock || item.qty || 1, 10)).keys(),
-                            ].map((x) => (
-                              <option key={x + 1} value={x + 1}>
-                                {x + 1}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center mt-2 space-x-4">
-                      <div>
-                        <p className="text-lg font-semibold text-teal-500">
+                <div key={item._id} className="group relative flex flex-col sm:flex-row gap-6 p-6 border border-zinc-900 bg-zinc-950/30 hover:border-zinc-800 transition-all duration-300">
+                  {/* Image */}
+                  <div className="w-full sm:w-32 aspect-[3/4] bg-zinc-900 overflow-hidden relative">
+                    <img
+                      src={item.image?.url || item.image}
+                      alt={item.brand}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+
+                  {/* Details */}
+                  <div className="flex-1 flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="text-xl font-bold uppercase tracking-wide">{item.name}</h3>
+                        <p className="text-red-500 font-bold font-mono text-lg">
                           ₹{(item.offer && Number(item.offer) < Number(item.price)) ? item.offer : item.price}
                         </p>
                       </div>
-                      <div>
-                        {Math.max(Number(item.price), Number(item.offer) || 0) > ((item.offer && Number(item.offer) < Number(item.price)) ? Number(item.offer) : Number(item.price)) && (
-                          <p className="text-sm text-gray-400 line-through">
-                            ₹{Math.max(Number(item.price), Number(item.offer) || 0)}
-                          </p>
-                        )}
+                      <p className="text-zinc-500 text-sm mb-4 font-bold uppercase tracking-wider">{item.brand}</p>
+
+                      {/* Attributes grid */}
+                      <div className="grid grid-cols-2 gap-4 max-w-xs text-xs font-mono text-zinc-400 mb-6">
+                        <div className="flex justify-between border-b border-zinc-900 pb-1">
+                          <span>SIZE</span>
+                          <span className="text-white">{item.size}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-zinc-900 pb-1">
+                          <span>COLOR</span>
+                          <span className="text-white">N/A</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Actions Row */}
+                    <div className="flex items-center justify-between">
+                      {/* Qty Selector */}
+                      <div className="flex items-center border border-zinc-800 bg-black">
+                        <button
+                          onClick={() => addToCartHandler(item, Number(item.qty) - 1)}
+                          disabled={item.qty <= 1}
+                          className="w-8 h-8 flex items-center justify-center text-zinc-500 hover:text-white hover:bg-zinc-900 transition-colors disabled:opacity-30"
+                        >
+                          <FaMinus size={8} />
+                        </button>
+                        <span className="w-10 text-center text-sm font-bold font-mono">{item.qty}</span>
+                        <button
+                          onClick={() => addToCartHandler(item, Number(item.qty) + 1)}
+                          disabled={item.qty >= item.countInStock}
+                          className="w-8 h-8 flex items-center justify-center text-zinc-500 hover:text-white hover:bg-zinc-900 transition-colors disabled:opacity-30"
+                        >
+                          <FaPlus size={8} />
+                        </button>
+                      </div>
+
+                      <div className="flex items-center gap-4">
+                        <button onClick={() => initiateRemove(item)} className="text-xs font-bold uppercase tracking-widest text-zinc-600 hover:text-red-600 transition-colors flex items-center gap-2">
+                          <FaTrash /> Remove
+                        </button>
                       </div>
                     </div>
                   </div>
-                  <div className="flex-shrink-0">
-                    <button
-                      onClick={() => initiateRemove(item)}
-                      className="text-sm bg-white text-gray-400 w-[4rem] hover:text-red-600 border-2 border-gray-200 font-semibold capitalize transition-colors"
-                    >
-                      Remove
-                    </button>
-                  </div>
                 </div>
               ))}
+            </div>
 
-              <div className="bg-white p-4 rounded-lg shadow mb-4">
-                <p className="font-bold mb-2">
-                  PRICE DETAILS ({cartItems.reduce((acc, item) => acc + item.qty, 0)}{" "}
-                  {cartItems.reduce((acc, item) => acc + item.qty, 0) > 1 ? "Items" : "Item"})
-                </p>
-                <div className="flex justify-between mb-2">
-                  <p className="text-sm">Total MRP</p>
-                  <p className="text-sm font-semibold">
-                    ₹{totalMRP.toFixed(2)}
-                  </p>
+            {/* Summary Panel */}
+            <div className="lg:col-span-1">
+              <div className="bg-zinc-950 border border-zinc-900 p-8 sticky top-32">
+                <h2 className="text-xl font-black uppercase tracking-widest mb-8 pb-4 border-b border-zinc-900">Order Summary</h2>
+
+                <div className="space-y-4 font-mono text-sm text-zinc-400 mb-8">
+                  <div className="flex justify-between">
+                    <span>SUBTOTAL (Items)</span>
+                    <span className="text-white">₹{totalMRP.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>DISCOUNT</span>
+                    <span className="text-red-500">- ₹{totalDiscount.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>SHIPPING</span>
+                    <span className="text-white">CALCULATED AT CHECKOUT</span>
+                  </div>
                 </div>
-                <div className="flex justify-between mb-2">
-                  <p className="text-sm">Discount</p>
-                  <p className="text-sm font-semibold text-green-500">
-                    - ₹{totalDiscount.toFixed(2)}
-                  </p>
+
+                <div className="flex justify-between items-end border-t border-zinc-900 pt-6 mb-8">
+                  <span className="font-bold uppercase tracking-widest">Total</span>
+                  <span className="text-2xl font-black text-white">₹{totalAmount.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between font-bold text-lg mb-4">
-                  <p>Total Amount</p>
-                  <p>₹{totalAmount.toFixed(2)}</p>
-                </div>
+
                 <button
-                  className="bg-[#649899] hover:bg-green-700 text-white w-full py-2 rounded font-bold uppercase transition-colors"
                   onClick={checkoutHandler}
+                  className="w-full bg-red-600 text-white font-black uppercase tracking-[0.2em] py-5 hover:bg-white hover:text-black transition-all duration-300"
                 >
-                  Checkout
+                  Proceed to Checkout
                 </button>
+
+                <div className="mt-6 text-center">
+                  <p className="text-xs text-zinc-600 uppercase tracking-wider">Secure Encrypted Transaction</p>
+                </div>
               </div>
-            </>
-          )}
-        </div>
+            </div>
+
+          </div>
+        )}
       </div>
 
+      {/* Remove Modal */}
       {modalVisible && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm animate-fade-in border border-gray-100">
-            <h3 className="text-lg font-bold text-gray-800 mb-2">Remove Item?</h3>
-            <p className="text-gray-600 mb-6 text-sm">Would you like to move this item to your favorites instead?</p>
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-zinc-950 border border-zinc-800 p-8 max-w-sm w-full">
+            <h3 className="text-xl font-black text-white uppercase mb-2">Remove Item</h3>
+            <p className="text-zinc-500 mb-8 text-sm">Do you want to remove this item from your bag?</p>
 
-            <div className="flex flex-col gap-3">
+            <div className="space-y-3">
               <button
                 onClick={handleMoveToFavorites}
-                className="w-full bg-[#649899] text-white py-2.5 rounded-lg font-semibold hover:bg-[#538283] transition-colors"
+                className="w-full bg-white text-black py-3 font-bold uppercase tracking-wider hover:bg-zinc-200 transition-colors"
               >
                 Move to Favorites
               </button>
               <button
                 onClick={handleRemove}
-                className="w-full bg-red-50 text-red-600 py-2.5 rounded-lg font-semibold hover:bg-red-100 transition-colors border border-red-100"
+                className="w-full border border-red-900 text-red-600 py-3 font-bold uppercase tracking-wider hover:bg-red-900/20 transition-colors"
               >
-                Remove
+                Remove Item
               </button>
               <button
                 onClick={() => setModalVisible(false)}
-                className="w-full text-gray-500 text-sm font-medium hover:text-gray-700 py-1"
+                className="w-full text-zinc-500 text-xs font-bold uppercase tracking-wider hover:text-white pt-2"
               >
                 Cancel
               </button>
@@ -223,6 +240,7 @@ const Cart = () => {
           </div>
         </div>
       )}
+
     </div>
   );
 };

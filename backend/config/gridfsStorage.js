@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const storage = new GridFsStorage({
-  url: process.env.MONGO_URI,
+  db: mongoose.connection.asPromise().then(() => mongoose.connection.db),
   file: (req, file) => {
     return {
       filename: `${Date.now()}-${file.originalname}`,
