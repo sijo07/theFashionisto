@@ -13,7 +13,7 @@ import {
 } from "../../utils/localStorage";
 import Loader from "../../components/loader";
 import Message from "../../components/message";
-import ProductTabs from "./ProductTabs";
+import ProductTabs from "./productTabs";
 import { addToCart, removeFromCart } from "../../redux/features/cart/cartSlice";
 import {
   addToFavorites,
@@ -175,8 +175,8 @@ const ProductDetails = () => {
                       disabled={s.stock === 0}
                       onClick={() => setSelectedSize(s.size)}
                       className={`min-w-[3.5rem] h-12 flex items-center justify-center border text-sm font-bold transition-all relative ${selectedSize === s.size
-                          ? 'border-red-600 bg-red-600 text-white'
-                          : s.stock === 0 ? 'border-zinc-800 text-zinc-600 cursor-not-allowed bg-zinc-900 line-through' : 'border-zinc-700 text-zinc-300 hover:border-white'
+                        ? 'border-red-600 bg-red-600 text-white'
+                        : s.stock === 0 ? 'border-zinc-800 text-zinc-600 cursor-not-allowed bg-zinc-900 line-through' : 'border-zinc-700 text-zinc-300 hover:border-white'
                         }`}
                     >
                       {s.size}
@@ -192,8 +192,8 @@ const ProductDetails = () => {
                 onClick={toggleCart}
                 disabled={product.countInStock === 0}
                 className={`flex-1 py-4 font-bold uppercase tracking-widest transition-all ${isProductInCart
-                    ? 'bg-zinc-800 text-white hover:bg-zinc-700'
-                    : 'bg-white text-black hover:bg-red-600 hover:text-white'
+                  ? 'bg-zinc-800 text-white hover:bg-zinc-700'
+                  : 'bg-white text-black hover:bg-red-600 hover:text-white'
                   } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 {isProductInCart ? 'Remove from Bag' : product.countInStock === 0 ? 'Unavailable' : 'Add to Cart'}
@@ -201,8 +201,8 @@ const ProductDetails = () => {
               <button
                 onClick={toggleFavorites}
                 className={`w-14 flex items-center justify-center border transition-all ${isFavorite
-                    ? 'border-red-600 text-red-600'
-                    : 'border-zinc-800 text-zinc-400 hover:border-white hover:text-white'
+                  ? 'border-red-600 text-red-600'
+                  : 'border-zinc-800 text-zinc-400 hover:border-white hover:text-white'
                   }`}
               >
                 {isFavorite ? <FaHeart size={20} /> : <FaRegHeart size={20} />}
