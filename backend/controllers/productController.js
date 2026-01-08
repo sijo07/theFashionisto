@@ -156,7 +156,13 @@ const fetchProducts = asyncHandler(async (req, res) => {
       : {};
 
     const count = await Product.countDocuments({ ...keyword });
-    const products = await Product.find({ ...keyword }).limit(pageSize);
+    const products = await Product.find({ ...keyword })
+      .populate({
+        path: "category",
+        select: "name parent",
+        populate: { path: "parent", select: "name" }
+      })
+      .limit(pageSize);
 
     res.json({
       products,
@@ -285,7 +291,11 @@ const filterProducts = asyncHandler(async (req, res) => {
     // Size filter temporarily removed or needs update to query 'sizes.size'
     // if (req.body.size) args['sizes.size'] = req.body.size; 
 
-    const products = await Product.find(args);
+    const products = await Product.find(args).populate({
+      path: "category",
+      select: "name parent",
+      populate: { path: "parent", select: "name" }
+    });
     res.json(products);
   } catch (error) {
     console.error(error);

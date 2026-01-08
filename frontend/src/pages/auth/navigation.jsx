@@ -70,7 +70,7 @@ const Navigation = () => {
       >
         <div className="max-w-screen-xl mx-auto px-6 flex justify-between items-center">
           {/* Logo */}
-          <Link to="/" className="text-2xl font-black tracking-tighter text-white group flex items-center gap-0 font-fashion italic">
+          <Link to="/" className="text-2xl font-black tracking-tighter text-white group flex items-center gap-0">
             <motion.div
               initial="initial"
               animate="animate"

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { FaRegHeart, FaHeart } from "react-icons/fa";
+import { IoHeartOutline, IoHeart } from "react-icons/io5";
 import { useSelector, useDispatch } from "react-redux";
 import {
   addToFavorites,
@@ -12,7 +12,7 @@ import {
   removeFavoriteFromLocalStorage,
 } from "../../utils/localStorage";
 
-const HeartIcon = ({ product }) => {
+const HeartIcon = ({ product, size = 26, className = "" }) => {
   const dispatch = useDispatch();
   const favorites = useSelector((state) => state.favorites) || [];
   const isFavorite = favorites.some((p) => p._id === product._id);
@@ -22,7 +22,9 @@ const HeartIcon = ({ product }) => {
     dispatch(setFavorites(favoritesFromLocalStorage));
   }, [dispatch]);
 
-  const toggleFavorites = () => {
+  const toggleFavorites = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (isFavorite) {
       dispatch(removeFromFavorites(product));
       removeFavoriteFromLocalStorage(product._id);
@@ -34,19 +36,13 @@ const HeartIcon = ({ product }) => {
 
   return (
     <div
-      className="flex items-center justify-center m-6 border border-gray-300 cursor-pointer w-[5rem] h-[2rem]"
+      className={`cursor-pointer transition-transform duration-200 active:scale-125 ${className}`}
       onClick={toggleFavorites}
     >
       {isFavorite ? (
-        <>
-          <FaHeart className="text-[#FF4B55]" />
-          <span className="text-sm ml-1">Liked</span>
-        </>
+        <IoHeart size={size} className="text-[#FF4B55]" />
       ) : (
-        <>
-          <FaRegHeart className="text-gray-500" />
-          <span className="text-sm ml-1 text-gray-600">Like</span>
-        </>
+        <IoHeartOutline size={size} className="text-white hover:text-[#FF4B55]" />
       )}
     </div>
   );

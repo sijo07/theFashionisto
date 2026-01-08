@@ -7,69 +7,67 @@ import cors from "cors";
 import connectDB from "./config/db.js";
 import configureMiddleware from "./config/middleware.js";
 import errorHandler from "./middlewares/errorHandler.js";
-import rateLimiter from "./middlewares/rateLimiter.js";
 import { initGridFS } from "./config/gridfs.js";
 
 import userRoutes from "./routes/userRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
+import uploadRoutes from "./routes/uploadRoutes.js";
 
 dotenv.config();
 const port = process.env.PORT || 5000;
 
-console.log(`Starting server with PORT: ${port}`); // Trigger Restart
+// ---------------- Initialize App ----------------
+const app = express();
 
-// ---------------- Connect to Database ----------------
-connectDB().then(async () => {
-  const app = express();
-
-  // Initialize GridFS after DB connection
+// ---------------- Database Connection ----------------
+// We call it but don't await at top level for serverless cold-start efficiency
+// connectDB() handles its own internal checks or connection pooling via mongoose
+connectDB().then(() => {
   initGridFS();
+});
 
-  // ---------------- Core Middleware ----------------
-  app.use(cors({
-    origin: process.env.CLIENT_URL || "*", // e.g., http://localhost:5173
-    credentials: true,
-  }));
+// ---------------- Core Middleware ----------------
+app.use(cors({
+  origin: process.env.CLIENT_URL || "*",
+  credentials: true,
+}));
 
-  app.use(express.json({ limit: "10mb" }));
-  app.use(express.urlencoded({ extended: true }));
-  app.use(cookieParser());
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
-  // ---------------- Security Middleware ----------------
-  configureMiddleware(app);  // helmet, cors, limiter
+// ---------------- Security Middleware ----------------
+configureMiddleware(app);  // helmet, cors, limiter
 
-  // ---------------- Static Files ----------------
-  const __dirname = path.resolve();
-  app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
+// ---------------- Static Files ----------------
+const __dirname = path.resolve();
+app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
 
-  // ---------------- API Routes ----------------
-  app.use("/api/users", userRoutes);
+// ---------------- API Routes ----------------
+app.use("/api/users", userRoutes);
+app.use("/api/upload", uploadRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/category", categoryRoutes);
+app.use("/api/orders", orderRoutes);
 
-  // Import upload routes *after DB connection*
-  const uploadRoutes = (await import("./routes/uploadRoutes.js")).default;
-  app.use("/api/upload", uploadRoutes);
+app.get("/api/config/paypal", (req, res) => {
+  res.send({ clientId: process.env.PAYPAL_CLIENT_ID });
+});
 
+app.get("/", (req, res) => {
+  res.send("API is running...");
+});
 
-  app.use("/api/products", productRoutes);
-  app.use("/api/category", categoryRoutes);
-  app.use("/api/orders", orderRoutes);
+// ---------------- Global Error Handler ----------------
+app.use(errorHandler);
 
-  app.get("/api/config/paypal", (req, res) => {
-    res.send({ clientId: process.env.PAYPAL_CLIENT_ID });
-  });
-
-  // ---------------- Global Error Handler ----------------
-  app.use(errorHandler);
-
-  // ---------------- Start Server ----------------
-  const server = app.listen(port, () => {
+// ---------------- Start Server (Local Only) ----------------
+if (process.env.NODE_ENV !== "production") {
+  app.listen(port, () => {
     console.log(`🚀 Server running on port: ${port}`);
   });
+}
 
-  // Handle server errors
-  server.on('error', (err) => {
-    console.error('Server error:', err);
-  });
-});
+export default app;

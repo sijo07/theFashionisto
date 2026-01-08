@@ -37,7 +37,7 @@ const Favorites = () => {
               className="text-6xl md:text-9xl font-black uppercase tracking-tighter leading-none"
             >
               The <br />
-              <span className="font-fashion italic text-red-600 block md:inline md:ml-4">Wishlist</span>
+              <span className="text-red-600 block md:inline md:ml-4">Wishlist</span>
             </motion.h1>
 
             <motion.div
