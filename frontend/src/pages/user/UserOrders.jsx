@@ -1,6 +1,6 @@
 import { useGetMyOrdersQuery } from "../../redux/api/orderApiSlice";
-import Loader from "../../components/loader";
-import Message from "../../components/message";
+import Loader from "../../components/Loader";
+import Message from "../../components/Message";
 import { Link } from "react-router-dom";
 import { FaBox, FaTimes, FaCheck, FaEye } from "react-icons/fa";
 
