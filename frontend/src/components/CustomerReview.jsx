@@ -1,6 +1,6 @@
 import { useGetTopProductsQuery } from "../redux/api/productApiSlice";
-import Loader from "./loader";
-import Message from "./message";
+import Loader from "./Loader";
+import Message from "./Message";
 
 const CustomerReviews = () => {
   const { data: products, isLoading, error } = useGetTopProductsQuery();

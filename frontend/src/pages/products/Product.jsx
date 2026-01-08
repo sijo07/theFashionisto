@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import HeartIcon from "./heartIcon";
+import HeartIcon from "./HeartIcon";
 import PropTypes from "prop-types";
 import {
   IoChatbubbleOutline,
