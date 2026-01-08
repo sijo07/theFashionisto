@@ -3,6 +3,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import mongoose from "mongoose";
 
 import connectDB from "./config/db.js";
 import configureMiddleware from "./config/middleware.js";
@@ -85,6 +86,16 @@ app.get("/", (req, res) => {
 
 app.get("/api/test", (req, res) => {
   res.json({ status: "ok", message: "Backend is reachable" });
+});
+
+app.get("/api/debug", (req, res) => {
+  res.json({
+    status: "debug",
+    mongoUriConfigured: !!process.env.MONGO_URI,
+    mongoUriPrefix: process.env.MONGO_URI ? process.env.MONGO_URI.substring(0, 15) + "..." : "MISSING",
+    dbState: mongoose.connection.readyState, // 0: disconnected, 1: connected, 2: connecting, 3: disconnecting
+    time: new Date().toISOString()
+  });
 });
 
 // ---------------- Global Error Handler ----------------
