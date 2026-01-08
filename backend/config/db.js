@@ -8,7 +8,7 @@ const connectDB = async () => {
     console.log(`Successfully Connected to MongoDB: ${conn.connection.host}`);
   } catch (error) {
     console.error(`ERROR: ${error.message}`);
-    process.exit(1);
+    // process.exit(1); // Do not crash on Vercel to allow debugging
   }
 };
 
