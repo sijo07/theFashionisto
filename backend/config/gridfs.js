@@ -1,7 +1,5 @@
 import mongoose from "mongoose";
-import Grid from "gridfs-stream";
 
-let gfs;
 let gridfsBucket;
 
 const initGridFS = () => {
@@ -9,10 +7,7 @@ const initGridFS = () => {
     gridfsBucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
       bucketName: "uploads",
     });
-
-    gfs = Grid(mongoose.connection.db, mongoose.mongo);
-    gfs.collection("uploads");
-    console.log("GridFS initialized successfully");
+    console.log("GridFS (Native) initialized successfully");
   };
 
   if (mongoose.connection.readyState === 1) {
@@ -22,4 +17,4 @@ const initGridFS = () => {
   }
 };
 
-export { gfs, gridfsBucket, initGridFS };
+export { gridfsBucket, initGridFS };

@@ -1,6 +1,6 @@
 import express from "express";
 import upload from "../config/gridfsStorage.js";
-import { gfs, gridfsBucket } from "../config/gridfs.js";
+import { gridfsBucket } from "../config/gridfs.js";
 import mongoose from "mongoose";
 
 const router = express.Router();
@@ -36,7 +36,9 @@ router.get("/:id", async (req, res) => {
       return res.status(400).json({ message: "Invalid file ID format" });
     }
 
-    const file = await gfs.files.findOne({ _id: new mongoose.Types.ObjectId(req.params.id) });
+    // Use native driver to find file metadata
+    const filesCollection = mongoose.connection.db.collection('uploads.files');
+    const file = await filesCollection.findOne({ _id: new mongoose.Types.ObjectId(req.params.id) });
 
     if (!file) return res.status(404).json({ message: "File not found" });
 

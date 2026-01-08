@@ -8,13 +8,13 @@ import mongoose from "mongoose";
 import connectDB from "./config/db.js";
 import configureMiddleware from "./config/middleware.js";
 import errorHandler from "./middlewares/errorHandler.js";
-// import { initGridFS } from "./config/gridfs.js";
+import { initGridFS } from "./config/gridfs.js";
 
 import userRoutes from "./routes/userRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
-// import uploadRoutes from "./routes/uploadRoutes.js";
+import uploadRoutes from "./routes/uploadRoutes.js";
 
 dotenv.config();
 const port = process.env.PORT || 5000;
@@ -26,7 +26,7 @@ const app = express();
 // We call it but don't await at top level for serverless cold-start efficiency
 // connectDB() handles its own internal checks or connection pooling via mongoose
 connectDB().then(() => {
-  // initGridFS();
+  initGridFS();
 });
 
 // ---------------- Core Middleware ----------------
@@ -71,7 +71,7 @@ app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
 
 // ---------------- API Routes ----------------
 app.use("/api/users", userRoutes);
-// app.use("/api/upload", uploadRoutes);
+app.use("/api/upload", uploadRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/category", categoryRoutes);
 app.use("/api/orders", orderRoutes);
