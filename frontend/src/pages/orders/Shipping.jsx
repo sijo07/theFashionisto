@@ -6,7 +6,7 @@ import {
   savePaymentMethod,
 } from "../../redux/features/cart/cartSlice";
 import { toast } from "react-toastify";
-import ProgressSteps from "../../components/progressSteps";
+import ProgressSteps from "../../components/ProgressSteps";
 import { FaCreditCard, FaMoneyBillWave, FaArrowRight, FaTruck, FaShieldAlt, FaUndo } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 

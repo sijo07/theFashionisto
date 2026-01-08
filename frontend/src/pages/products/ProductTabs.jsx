@@ -1,8 +1,8 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
-import StarRating from "./starRating";
-import Loader from "../../components/loader";
-import Message from "../../components/message";
+import StarRating from "./StarRating";
+import Loader from "../../components/Loader";
+import Message from "../../components/Message";
 import { FaEdit, FaFilter, FaSortAmountDown, FaChevronDown, FaChevronUp, FaTrash, FaCheckCircle, FaInfoCircle, FaTimesCircle } from "react-icons/fa";
 import { useDeleteReviewMutation } from "../../redux/api/productApiSlice";
 import { toast } from "react-toastify";
@@ -60,8 +60,8 @@ const ProductTabs = ({
       <div className="flex border-b border-gray-100 bg-gray-50/50">
         <button
           className={`flex-1 py-4 text-sm font-bold uppercase tracking-wide transition-all ${activeTab === "reviews"
-              ? "border-b-2 border-[#649899] text-[#649899] bg-white"
-              : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+            ? "border-b-2 border-[#649899] text-[#649899] bg-white"
+            : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
             }`}
           onClick={() => handleTabClick("reviews")}
         >
@@ -69,8 +69,8 @@ const ProductTabs = ({
         </button>
         <button
           className={`flex-1 py-4 text-sm font-bold uppercase tracking-wide transition-all ${activeTab === "write_review"
-              ? "border-b-2 border-[#649899] text-[#649899] bg-white"
-              : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+            ? "border-b-2 border-[#649899] text-[#649899] bg-white"
+            : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
             }`}
           onClick={() => handleTabClick("write_review")}
         >
@@ -277,8 +277,8 @@ const ProductTabs = ({
                         type="submit"
                         disabled={loadingProductReview || rating === 0}
                         className={`w-full md:w-auto px-10 py-3 rounded-lg text-white font-bold text-sm transition-all ${loadingProductReview || rating === 0
-                            ? "bg-gray-300 cursor-not-allowed"
-                            : "bg-[#649899] hover:bg-[#538283] shadow-lg transform hover:-translate-y-0.5"
+                          ? "bg-gray-300 cursor-not-allowed"
+                          : "bg-[#649899] hover:bg-[#538283] shadow-lg transform hover:-translate-y-0.5"
                           }`}
                       >
                         {loadingProductReview ? "Submitting..." : "Submit Review"}

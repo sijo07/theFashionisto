@@ -11,9 +11,9 @@ import {
   getFavoritesFromLocalStorage,
   removeFavoriteFromLocalStorage,
 } from "../../utils/localStorage";
-import Loader from "../../components/loader";
-import Message from "../../components/message";
-import ProductTabs from "./productTabs";
+import Loader from "../../components/Loader";
+import Message from "../../components/Message";
+import ProductTabs from "./ProductTabs";
 import { addToCart, removeFromCart } from "../../redux/features/cart/cartSlice";
 import {
   addToFavorites,

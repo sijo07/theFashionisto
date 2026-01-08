@@ -5,7 +5,7 @@ import { setCredentials } from "../../redux/features/auth/authSlice";
 import { useRegisterMutation } from "../../redux/api/userApiSlice";
 import { useUploadProductImageMutation } from "../../redux/api/productApiSlice";
 import { MdVisibility, MdVisibilityOff, MdEmail, MdPerson, MdPhone, MdLock, MdArrowForward, MdWc, MdCalendarToday, MdCloudUpload } from "react-icons/md";
-import Loader from "../../components/loader";
+import Loader from "../../components/Loader";
 import { toast } from "react-toastify";
 
 const Register = () => {

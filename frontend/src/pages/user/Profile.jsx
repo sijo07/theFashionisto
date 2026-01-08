@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import Loader from "../../components/loader";
+import Loader from "../../components/Loader";
 import { useGetProfileQuery, useUpdateProfileMutation } from "../../redux/api/userApiSlice";
 import { setCredentials } from "../../redux/features/auth/authSlice";
 import { FaUser, FaEnvelope, FaLock, FaCamera, FaSave, FaSignOutAlt } from "react-icons/fa";

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import Loader from "../../components/loader";
+import Loader from "../../components/Loader";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { useChangePasswordMutation } from "../../redux/api/userApiSlice";
