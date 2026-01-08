@@ -121,44 +121,44 @@ const EditProductModal = ({ isOpen, onClose, productId }) => {
 
     const availableSubCategories = mainCategory ? categoriesData?.filter(c => c.parent === mainCategory) : [];
 
-    const inputClass = "w-full bg-white border border-gray-100 rounded-2xl px-5 py-4 text-sm font-bold text-gray-700 focus:ring-4 focus:ring-teal-500/10 placeholder:text-gray-300 transition-all";
+    const inputClass = "w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 text-sm font-bold text-white focus:ring-4 focus:ring-teal-500/10 placeholder:text-zinc-600 transition-all";
     const labelClass = "text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block";
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-xl px-4 p-8">
             <motion.div
                 initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="bg-white rounded-[3.5rem] shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col md:flex-row relative border border-white/20"
+                className="bg-zinc-950 rounded-[3.5rem] shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col md:flex-row relative border border-zinc-900"
             >
                 <button onClick={onClose} className="absolute top-8 right-8 text-gray-300 hover:text-rose-500 transition-colors z-50 p-4"><FaTimes size={24} /></button>
 
                 {/* Tactical Preview Sidebar */}
-                <div className="w-full md:w-2/5 bg-gray-50/50 p-10 lg:p-14 flex flex-col gap-8 border-r border-gray-100 overflow-y-auto">
+                <div className="w-full md:w-2/5 bg-zinc-900/50 p-10 lg:p-14 flex flex-col gap-8 border-r border-zinc-800 overflow-y-auto">
                     <div className="space-y-2">
-                        <h3 className="text-2xl font-black text-gray-900 tracking-tight uppercase">Visual Optic</h3>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Digital Product Preview</p>
+                        <h3 className="text-2xl font-black text-white tracking-tight uppercase">Product Preview</h3>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Digital Catalog Asset</p>
                     </div>
 
-                    <div className="relative group aspect-[4/5] bg-white rounded-[2.5rem] border border-gray-100 overflow-hidden shadow-2xl shadow-gray-200/50 flex items-center justify-center">
+                    <div className="relative group aspect-[4/5] bg-zinc-900 rounded-[2.5rem] border border-zinc-800 overflow-hidden shadow-2xl shadow-black/50 flex items-center justify-center">
                         {imageUrl ? <img src={imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" /> : <FaCloudUploadAlt size={48} className="text-gray-200" />}
                         <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer text-white font-black uppercase tracking-widest text-[10px] gap-2">
                             <div className="w-12 h-12 rounded-2xl bg-teal-600 flex items-center justify-center shadow-lg mb-2"><FaCloudUploadAlt size={20} /></div>
-                            Sync New Optic
+                            Upload Image
                             <input type="file" accept="image/*" onChange={uploadFileHandler} className="hidden" />
                         </label>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-                            <p className={labelClass}>Liquid Value</p>
+                        <div className="bg-zinc-900 p-6 rounded-3xl border border-zinc-800 shadow-sm">
+                            <p className={labelClass}>Price</p>
                             <div className="flex items-center gap-1 text-teal-600">
                                 <span className="text-xs font-black">₹</span>
                                 <input type="number" value={price} onChange={e => setPrice(e.target.value)} className="w-full bg-transparent border-none p-0 text-xl font-black focus:ring-0" />
                             </div>
                         </div>
-                        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                        <div className="bg-zinc-900 p-6 rounded-3xl border border-zinc-800 shadow-sm">
                             <p className={labelClass}>Order Limit</p>
-                            <div className="flex items-center gap-2 text-gray-900 font-black">
+                            <div className="flex items-center gap-2 text-white font-black">
                                 <input type="number" value={quantity} onChange={e => setQuantity(e.target.value)} className="w-full bg-transparent border-none p-0 text-xl font-black focus:ring-0" />
                             </div>
                         </div>
@@ -166,7 +166,7 @@ const EditProductModal = ({ isOpen, onClose, productId }) => {
 
                     <motion.div
                         onClick={() => setIsFeatured(!isFeatured)}
-                        className={`p-6 rounded-3xl border transition-all cursor-pointer flex items-center justify-between ${isFeatured ? 'bg-amber-50 border-amber-200 text-amber-700 shadow-lg shadow-amber-500/10' : 'bg-white border-gray-100 text-gray-400'}`}
+                        className={`p-6 rounded-3xl border transition-all cursor-pointer flex items-center justify-between ${isFeatured ? 'bg-amber-900/10 border-amber-800 text-amber-500 shadow-lg shadow-amber-900/10' : 'bg-zinc-900 border-zinc-800 text-zinc-400'}`}
                     >
                         <div className="flex items-center gap-4">
                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isFeatured ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-300'}`}><FaStar size={18} /></div>
@@ -184,8 +184,8 @@ const EditProductModal = ({ isOpen, onClose, productId }) => {
                 {/* Global Configuration Form */}
                 <div className="flex-1 p-10 lg:p-14 overflow-y-auto">
                     <div className="mb-12">
-                        <h2 className="text-3xl font-black text-gray-900 tracking-tighter uppercase leading-none mb-2">Configure Product</h2>
-                        <p className="text-[10px] font-bold text-teal-600 uppercase tracking-[0.3em]">Operational Catalog Update</p>
+                        <h2 className="text-3xl font-black text-white tracking-tighter uppercase leading-none mb-2">Configure Product</h2>
+                        <p className="text-[10px] font-bold text-teal-600 uppercase tracking-[0.3em]">Catalog Management</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-8">
@@ -236,7 +236,7 @@ const EditProductModal = ({ isOpen, onClose, productId }) => {
                                 {activeSizes.map(s => {
                                     const isSelected = sizeStock.hasOwnProperty(s);
                                     return (
-                                        <div key={s} className={`p-5 rounded-[2rem] border transition-all ${isSelected ? 'border-teal-400 bg-teal-50/20 shadow-xl shadow-teal-500/5' : 'border-gray-100 bg-gray-50/50 opacity-60'}`}>
+                                        <div key={s} className={`p-5 rounded-[2rem] border transition-all ${isSelected ? 'border-teal-500/50 bg-teal-900/20 shadow-xl shadow-teal-900/10' : 'border-zinc-800 bg-zinc-900/50 opacity-60'}`}>
                                             <div className="flex items-center justify-between mb-4">
                                                 <span className={`text-xs font-black ${isSelected ? 'text-teal-700' : 'text-gray-400'}`}>{s}</span>
                                                 <div onClick={() => toggleSize(s)} className={`w-5 h-5 rounded-full border-2 cursor-pointer flex items-center justify-center ${isSelected ? 'border-teal-500 bg-teal-500' : 'border-gray-200 bg-white'}`}>
@@ -252,12 +252,12 @@ const EditProductModal = ({ isOpen, onClose, productId }) => {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
                             <div className="space-y-2">
-                                <label className={labelClass}>Liquid Incentive (Offer %)</label>
+                                <label className={labelClass}>Discount Offer (%)</label>
                                 <input type="number" value={offer} onChange={e => setOffer(e.target.value)} className={inputClass} placeholder="OFFER %" />
                             </div>
                             <div className="flex gap-4">
-                                <button type="button" onClick={onClose} className="flex-1 py-4 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-colors">Abort Sync</button>
-                                <button type="submit" className="flex-2 py-4 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-2xl shadow-teal-500/30 transition-all hover:-translate-y-1">Confirm Sync</button>
+                                <button type="button" onClick={onClose} className="flex-1 py-4 bg-zinc-900 hover:bg-zinc-800 text-zinc-500 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-colors">Cancel</button>
+                                <button type="submit" className="flex-2 py-4 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-2xl shadow-teal-500/30 transition-all hover:-translate-y-1">Save Changes</button>
                             </div>
                         </div>
                     </form>

@@ -95,24 +95,24 @@ const OrderList = () => {
     visible: { opacity: 1, y: 0 }
   };
 
-  if (isLoading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><Loader /></div>;
+  if (isLoading) return <div className="min-h-screen bg-[#050505] flex items-center justify-center"><Loader /></div>;
   if (error) return <Message variant="danger">ACCESS_DENIED: {error?.data?.message || error.error}</Message>;
 
   return (
-    <div className="min-h-screen bg-[#FDFEFE] font-sans text-gray-900 pb-20 overflow-x-hidden">
+    <div className="min-h-screen bg-[#050505] font-sans text-white pb-20 overflow-x-hidden">
       <AdminHeader title="Order History" subtitle={`Tracking ${orders?.length || 0} customer transactions for your brand.`}>
         <div className="flex items-center gap-4">
-          <div className="relative group w-64 hidden lg:block">
+          <div className="relative group w-full lg:w-64">
             <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-teal-600 transition-colors" />
             <input
               type="text"
               placeholder="Search records..."
-              className="w-full bg-gray-50 border-none rounded-2xl py-3 pl-12 pr-4 text-sm font-medium focus:ring-4 focus:ring-teal-500/5 transition-all"
+              className="w-full bg-zinc-900 border-none rounded-2xl py-3 pl-12 pr-4 text-sm font-medium focus:ring-4 focus:ring-teal-500/5 transition-all text-white placeholder:text-zinc-600"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <button onClick={handleExportCSV} className="flex items-center gap-2 bg-gray-900 text-white px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest hover:-translate-y-1 transition-all shadow-xl">
+          <button onClick={handleExportCSV} className="flex items-center gap-2 bg-red-600 text-white px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest hover:-translate-y-1 transition-all shadow-xl shadow-red-600/20">
             <FaDownload size={10} /> Export Data
           </button>
         </div>
@@ -122,26 +122,26 @@ const OrderList = () => {
 
         {/* KPI Strip */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-teal-50 p-6 rounded-[2rem] border border-teal-100 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-teal-600 text-white flex items-center justify-center shadow-lg"><FaBoxOpen /></div>
-            <div><p className="text-[10px] font-black text-teal-600 uppercase tracking-widest">Gross Sales</p><h4 className="text-2xl font-black text-gray-900">₹{orders?.reduce((a, b) => a + b.totalPrice, 0).toLocaleString()}</h4></div>
+          <div className="bg-zinc-900 p-6 rounded-[2rem] border border-zinc-800 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-red-600 text-white flex items-center justify-center shadow-lg"><FaBoxOpen /></div>
+            <div><p className="text-[10px] font-black text-red-500 uppercase tracking-widest">Gross Sales</p><h4 className="text-2xl font-black text-white">₹{orders?.reduce((a, b) => a + b.totalPrice, 0).toLocaleString()}</h4></div>
           </div>
-          <div className="bg-amber-50 p-6 rounded-[2rem] border border-amber-100 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg"><FaCalendarAlt /></div>
-            <div><p className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Active Orders</p><h4 className="text-2xl font-black text-gray-900">{orders?.filter(o => o.orderStatus === 'Pending' || o.orderStatus === 'Processing').length} Units</h4></div>
+          <div className="bg-zinc-900 p-6 rounded-[2rem] border border-zinc-800 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-zinc-800 text-zinc-400 flex items-center justify-center shadow-lg"><FaCalendarAlt /></div>
+            <div><p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Active Orders</p><h4 className="text-2xl font-black text-white">{orders?.filter(o => o.orderStatus === 'Pending' || o.orderStatus === 'Processing').length} Units</h4></div>
           </div>
-          <div className="bg-blue-50 p-6 rounded-[2rem] border border-blue-100 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-lg"><FaTruck /></div>
-            <div><p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">In Transit</p><h4 className="text-2xl font-black text-gray-900">{orders?.filter(o => o.isPaid && !o.isDelivered).length} Units</h4></div>
+          <div className="bg-zinc-900 p-6 rounded-[2rem] border border-zinc-800 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-zinc-800 text-zinc-400 flex items-center justify-center shadow-lg"><FaTruck /></div>
+            <div><p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">In Transit</p><h4 className="text-2xl font-black text-white">{orders?.filter(o => o.isPaid && !o.isDelivered).length} Units</h4></div>
           </div>
-          <div className="bg-emerald-50 p-6 rounded-[2rem] border border-emerald-100 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-lg"><FaCheckCircle /></div>
-            <div><p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Fulfilled</p><h4 className="text-2xl font-black text-gray-900">{orders?.filter(o => o.isDelivered).length} Units</h4></div>
+          <div className="bg-zinc-900 p-6 rounded-[2rem] border border-zinc-800 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-zinc-800 text-zinc-400 flex items-center justify-center shadow-lg"><FaCheckCircle /></div>
+            <div><p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Fulfilled</p><h4 className="text-2xl font-black text-white">{orders?.filter(o => o.isDelivered).length} Units</h4></div>
           </div>
         </div>
 
         {/* Order Table */}
-        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="bg-white rounded-[3rem] border border-gray-100 shadow-2xl shadow-gray-200/30 overflow-hidden">
+        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="bg-zinc-950 rounded-[3rem] border border-zinc-900 shadow-2xl shadow-zinc-900/30 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
@@ -169,7 +169,7 @@ const OrderList = () => {
                       </div>
                     </td>
                     <td className="px-8 py-6">
-                      <span className="text-[10px] font-mono text-teal-600 bg-teal-50 px-2 py-1 rounded-md border border-teal-100 font-bold uppercase tracking-tighter">
+                      <span className="text-[10px] font-mono text-white bg-zinc-800 px-2 py-1 rounded-md border border-zinc-700 font-bold uppercase tracking-tighter">
                         #{o.orderId || o._id.substring(0, 8).toUpperCase()}
                       </span>
                     </td>

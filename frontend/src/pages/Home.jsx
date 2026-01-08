@@ -59,7 +59,7 @@ const Home = () => {
     <>
       {!keyword ? <Hero /> : <div className="pt-24 pb-10 px-6 max-w-[1440px] mx-auto"><h2 className="text-3xl font-black text-white uppercase">Search Results</h2></div>}
 
-      <div className="bg-black min-h-screen text-white">
+      <div className="bg-[#050505] min-h-screen text-white">
         {isLoading ? (
           <Loader />
         ) : isError ? (

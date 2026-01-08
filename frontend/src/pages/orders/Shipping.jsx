@@ -69,7 +69,7 @@ const Shipping = () => {
   const labelClass = "block text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-2";
 
   return (
-    <div className="bg-black min-h-screen text-white pt-24 md:pt-32 pb-20">
+    <div className="bg-[#050505] min-h-screen text-white pt-24 md:pt-32 pb-20">
       <div className="max-w-[1440px] mx-auto px-6">
 
         {/* Progress Steps Center */}

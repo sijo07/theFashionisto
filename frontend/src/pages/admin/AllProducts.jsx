@@ -35,11 +35,11 @@ const AllProducts = () => {
     p.brand.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (isLoading) return <div className="min-h-screen bg-black flex items-center justify-center"><Loader /></div>;
+  if (isLoading) return <div className="min-h-screen bg-[#050505] flex items-center justify-center"><Loader /></div>;
   if (isError) return <div className="text-red-500 p-10">Error loading products</div>;
 
   return (
-    <div className="min-h-screen bg-black font-sans text-white pb-20">
+    <div className="min-h-screen bg-[#050505] font-sans text-white pb-20">
       <AdminHeader title="Product Catalog" subtitle={`Total Products: ${products.length}`}>
         <Link to="/admin/productlist" className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 text-xs font-bold uppercase tracking-wider flex items-center gap-2 rounded-sm transition-all">
           <FaPlus /> Add New
@@ -90,7 +90,7 @@ const AllProducts = () => {
                   <th className="p-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-800 bg-black">
+              <tbody className="divide-y divide-zinc-800 bg-[#050505]">
                 {filteredProducts?.map((product) => (
                   <tr key={product._id} className="hover:bg-zinc-900/50 transition-colors group">
                     <td className="p-4">

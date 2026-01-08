@@ -91,7 +91,7 @@ const ProductList = () => {
   const labelClass = "text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2 block";
 
   return (
-    <div className="min-h-screen bg-black font-sans text-white pb-20">
+    <div className="min-h-screen bg-[#050505] font-sans text-white pb-20">
       <AdminHeader title="Create Product" subtitle="Add new inventory item" />
 
       <div className="p-6 lg:p-10 max-w-[1440px] mx-auto">

@@ -4,7 +4,7 @@ import { FaArrowRight, FaSearch } from "react-icons/fa";
 
 const NotFound = () => {
     return (
-        <div className="min-h-screen bg-black text-white flex items-center justify-center p-6 relative overflow-hidden font-sans">
+        <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center p-6 relative overflow-hidden font-sans">
             {/* Abstract Background Element */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[30vw] font-black text-zinc-900 select-none opacity-20 tracking-tighter italic">
                 404

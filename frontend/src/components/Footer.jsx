@@ -1,7 +1,10 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { FaTwitter, FaInstagram, FaFacebookF } from "react-icons/fa";
 
 const Footer = () => {
+  const location = useLocation();
+  if (location.pathname.startsWith("/admin")) return null;
+
   return (
     <footer className="bg-black border-t border-zinc-900 pt-16 pb-8">
       <div className="max-w-screen-xl mx-auto px-6">

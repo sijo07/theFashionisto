@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useLogoutMutation, useGetProfileQuery } from "../../redux/api/userApiSlice";
 import { logout } from "../../redux/features/auth/authSlice";
 import { FaBagShopping, FaStore } from "react-icons/fa6";
-import { FaHome, FaUserAlt, FaBars, FaTimes } from "react-icons/fa";
+import { FaHome, FaUserAlt, FaBars, FaTimes, FaTachometerAlt } from "react-icons/fa";
 import { FcLike } from "react-icons/fc";
 import { MdFavoriteBorder } from "react-icons/md";
 import { FavoritesCount, CartCount } from "./../products/index";
@@ -60,6 +60,9 @@ const Navigation = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const location = useLocation();
+  if (location.pathname.startsWith("/admin")) return null;
+
   return (
     <>
       <header
@@ -74,25 +77,27 @@ const Navigation = () => {
             <motion.div
               initial="initial"
               animate="animate"
-              className="flex overflow-hidden"
+              className="flex items-center overflow-hidden"
             >
-              {["T", "H", "E"].map((char, i) => (
-                <motion.span
-                  key={i}
-                  variants={{
-                    initial: { y: 20, opacity: 0 },
-                    animate: { y: 0, opacity: 1 }
-                  }}
-                  transition={{ duration: 0.5, delay: i * 0.1, ease: [0.33, 1, 0.68, 1] }}
-                >
-                  {char}
-                </motion.span>
-              ))}
+              <div className="flex font-fashion font-black italic tracking-tighter mr-1 text-white">
+                {["T", "H", "E"].map((char, i) => (
+                  <motion.span
+                    key={i}
+                    variants={{
+                      initial: { y: 20, opacity: 0 },
+                      animate: { y: 0, opacity: 1 }
+                    }}
+                    transition={{ duration: 0.5, delay: i * 0.1, ease: [0.33, 1, 0.68, 1] }}
+                  >
+                    {char}
+                  </motion.span>
+                ))}
+              </div>
               <motion.span
                 initial={{ width: 0, opacity: 0 }}
                 animate={{ width: "auto", opacity: 1 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
-                className="text-red-500 flex"
+                className="text-red-500 flex font-fashion font-black italic tracking-tighter"
               >
                 {["F", "A", "S", "H", "I", "O", "N", "I", "S", "T", "O"].map((char, i) => (
                   <motion.span
@@ -158,6 +163,7 @@ const Navigation = () => {
           </div>
 
           {/* Right User Navigation */}
+          {/* Right User Navigation */}
           <div className="flex items-center space-x-6">
             {userInfo ? (
               <div
@@ -168,7 +174,6 @@ const Navigation = () => {
               >
                 <div className="flex items-center gap-3 cursor-pointer group">
                   <div className="text-right hidden sm:block">
-                    {/* Updated to match image: Red Username */}
                     <p className="text-xs font-bold text-red-500 uppercase tracking-wider">
                       {userInfo.username}
                     </p>
@@ -188,8 +193,14 @@ const Navigation = () => {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
-                      className="absolute top-full right-[-3rem] mt-4 w-[18rem] bg-zinc-900 border border-zinc-800 rounded-md shadow-xl overflow-hidden p-2"
+                      className="absolute top-full right-0 md:right-[-3rem] mt-4 w-60 md:w-[18rem] bg-zinc-900 border border-zinc-800 rounded-md shadow-xl overflow-hidden p-2"
                     >
+                      <button
+                        onClick={() => setDropdownOpen(false)}
+                        className="absolute top-3 right-3 text-zinc-500 hover:text-red-500 transition-colors"
+                      >
+                        <FaTimes size={14} />
+                      </button>
                       <div className="flex justify-center mb-1">
                         <div className="w-14 h-1 bg-red-500 rounded-full"></div>
                       </div>
@@ -200,28 +211,17 @@ const Navigation = () => {
                         <p className="text-xs text-zinc-500 mt-1">{userInfo.phone}</p>
                       </div>
 
-                      {userInfo.isAdmin && (
-                        <>
-                          {[
-                            { label: 'Dashboard', path: '/admin/dashboard' },
-                            { label: 'Products', path: '/admin/productList' },
-                            { label: 'Category', path: '/admin/categoryList' },
-                            { label: 'Orders', path: '/admin/orderList' },
-                            { label: 'Users', path: '/admin/userList' },
-                          ].map(link => (
-                            <Link
-                              key={link.path}
-                              to={link.path}
-                              className="block px-4 py-2 text-xs text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors uppercase tracking-wider rounded-sm"
-                              onClick={closeDropdown}
-                            >
-                              {link.label}
-                            </Link>
-                          ))}
-                        </>
-                      )}
-
                       <div className="my-2 border-t border-zinc-800 mx-4" />
+
+                      {userInfo.isAdmin && (
+                        <Link
+                          to="/admin/dashboard"
+                          className="block px-4 py-2 text-xs text-red-500 font-bold hover:bg-zinc-800 transition-colors uppercase tracking-wider rounded-sm"
+                          onClick={closeDropdown}
+                        >
+                          Command Center
+                        </Link>
+                      )}
 
                       <Link
                         to="/profile"
@@ -259,147 +259,48 @@ const Navigation = () => {
                 <span>Login</span>
               </Link>
             )}
-
-            {/* Mobile Menu Button */}
-            <button
-              className="md:hidden text-white hover:text-red-500 transition-colors"
-              onClick={toggleSidebar}
-            >
-              <FaBars size={24} />
-            </button>
           </div>
         </div>
       </header>
 
-      {/* Sidebar for mobile view */}
-      <AnimatePresence>
-        {showSidebar && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={closeSidebar}
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[150]"
-            />
-            <motion.div
-              initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
-              transition={{ type: "tween", duration: 0.3 }}
-              className="fixed top-0 right-0 h-full w-80 bg-zinc-900 border-l border-zinc-800 z-[151] p-6 shadow-2xl"
-            >
-              <div className="flex justify-between items-center mb-10">
-                <Link to="/" onClick={closeSidebar} className="text-xl font-black text-white tracking-tighter font-fashion italic">
-                  THE<span className="text-red-500">FASHIONISTO</span>
-                </Link>
-                <button
-                  className="text-zinc-400 hover:text-red-500 transition-colors"
-                  onClick={closeSidebar}
-                >
-                  <FaTimes size={24} />
-                </button>
-              </div>
+      {/* Mobile Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-black/90 backdrop-blur-lg border-t border-zinc-900 pb-safe">
+        <div className="flex justify-around items-center h-16">
+          <Link to="/" className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${location.pathname === '/' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>
+            <FaHome size={20} />
+            <span className="text-[9px] font-bold uppercase tracking-widest">Home</span>
+          </Link>
 
-              <ul className="space-y-4">
-                <li>
-                  <Link
-                    to="/"
-                    className="flex items-center gap-3 text-lg font-bold text-zinc-400 hover:text-white transition-colors uppercase tracking-wider"
-                    onClick={closeSidebar}
-                  >
-                    <FaHome size={20} /> Home
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/shop"
-                    className="flex items-center gap-3 text-lg font-bold text-zinc-400 hover:text-white transition-colors uppercase tracking-wider"
-                    onClick={closeSidebar}
-                  >
-                    <FaStore size={20} /> Shop
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/cart"
-                    className="flex items-center gap-3 text-lg font-bold text-zinc-400 hover:text-white transition-colors uppercase tracking-wider"
-                    onClick={closeSidebar}
-                  >
-                    <FaBagShopping size={20} /> Bag
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/favorite"
-                    className="flex items-center gap-3 text-lg font-bold text-zinc-400 hover:text-white transition-colors uppercase tracking-wider"
-                    onClick={closeSidebar}
-                  >
-                    <MdFavoriteBorder size={20} /> Liked
-                  </Link>
-                </li>
+          <Link to="/shop" className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${location.pathname === '/shop' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>
+            <FaStore size={20} />
+            <span className="text-[9px] font-bold uppercase tracking-widest">Shop</span>
+          </Link>
 
-                <div className="h-px bg-zinc-800 my-4" />
+          <Link to="/cart" className={`relative flex flex-col items-center justify-center w-full h-full space-y-1 ${location.pathname === '/cart' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>
+            <div className="relative">
+              <FaBagShopping size={20} />
+              {cartItems.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[9px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full leading-none">
+                  {cartItems.reduce((a, c) => a + c.qty, 0)}
+                </span>
+              )}
+            </div>
+            <span className="text-[9px] font-bold uppercase tracking-widest">Bag</span>
+          </Link>
 
-                {userInfo ? (
-                  <>
-                    {userInfo.isAdmin && (
-                      <div className="mb-6">
-                        <p className="text-xs font-bold text-red-500 uppercase tracking-widest mb-4">Admin Tools</p>
-                        <ul className="space-y-3 pl-4 border-l border-zinc-800">
-                          {[
-                            { label: 'Dashboard', path: '/admin/dashboard' },
-                            { label: 'Products', path: '/admin/productList' },
-                            { label: 'Category', path: '/admin/categoryList' },
-                            { label: 'Orders', path: '/admin/orderList' },
-                            { label: 'Users', path: '/admin/userList' },
-                          ].map(item => (
-                            <li key={item.path}>
-                              <Link
-                                to={item.path}
-                                className="text-sm text-zinc-500 hover:text-white uppercase tracking-wider block"
-                                onClick={closeSidebar}
-                              >
-                                {item.label}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    <li>
-                      <Link
-                        to="/profile"
-                        className="flex items-center gap-3 text-sm font-bold text-zinc-400 hover:text-white transition-colors uppercase tracking-wider"
-                        onClick={closeSidebar}
-                      >
-                        <FaUserAlt /> Profile
-                      </Link>
-                    </li>
-                    <li className="mt-4">
-                      <button
-                        onClick={() => {
-                          closeSidebar();
-                          logoutHandler();
-                        }}
-                        className="w-full py-3 bg-red-600 text-white font-bold uppercase tracking-wider hover:bg-red-700 transition-colors rounded-sm"
-                      >
-                        Logout
-                      </button>
-                    </li>
-                  </>
-                ) : (
-                  <li>
-                    <Link
-                      to="/login"
-                      className="w-full block py-3 bg-white text-black text-center font-bold uppercase tracking-wider hover:bg-zinc-200 transition-colors rounded-sm"
-                      onClick={closeSidebar}
-                    >
-                      Login
-                    </Link>
-                  </li>
-                )}
-              </ul>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+          <Link to="/favorite" className={`relative flex flex-col items-center justify-center w-full h-full space-y-1 ${location.pathname === '/favorite' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>
+            <div className="relative">
+              <MdFavoriteBorder size={20} />
+              {favorites.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[9px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full leading-none">
+                  {favorites.length}
+                </span>
+              )}
+            </div>
+            <span className="text-[9px] font-bold uppercase tracking-widest">Liked</span>
+          </Link>
+        </div>
+      </div>
     </>
   );
 };

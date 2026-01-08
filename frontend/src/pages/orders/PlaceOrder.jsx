@@ -51,7 +51,7 @@ const PlaceOrder = () => {
   const totalPrice = Number(cart.totalPrice) || 0;
 
   return (
-    <div className="bg-black min-h-screen text-white pt-32 pb-20">
+    <div className="bg-[#050505] min-h-screen text-white pt-32 pb-20">
       <div className="max-w-[1440px] mx-auto px-6">
 
         <div className="mb-12">

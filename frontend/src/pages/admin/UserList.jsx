@@ -88,8 +88,8 @@ const UserList = () => {
     }
   };
 
-  if (isLoading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><Loader /></div>;
-  if (error) return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-rose-500 font-bold uppercase tracking-widest">Data retrieval failed</div>;
+  if (isLoading) return <div className="min-h-screen bg-[#050505] flex items-center justify-center"><Loader /></div>;
+  if (error) return <div className="min-h-screen bg-[#050505] flex items-center justify-center text-rose-500 font-bold uppercase tracking-widest">Data retrieval failed</div>;
 
   const superAdminId = users?.length > 0 ? users.reduce((p, c) => (new Date(p.createdAt) < new Date(c.createdAt) ? p : c))._id : null;
   const filteredUsers = users?.filter(u =>
@@ -108,20 +108,20 @@ const UserList = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFEFE] font-sans text-gray-900 pb-20 overflow-x-hidden">
+    <div className="min-h-screen bg-[#050505] font-sans text-white pb-20 overflow-x-hidden">
       <AdminHeader title="User Management" subtitle={`Overseeing ${users?.length || 0} registered members on the platform.`}>
         <div className="flex items-center gap-4">
-          <div className="relative group w-64 hidden md:block">
+          <div className="relative group w-full md:w-64">
             <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-teal-600 transition-colors" />
             <input
               type="text"
               placeholder="Search users..."
-              className="w-full bg-gray-50 border-none rounded-2xl py-3 pl-12 pr-4 text-sm font-medium focus:ring-4 focus:ring-teal-500/5 transition-all"
+              className="w-full bg-zinc-900 border-none rounded-2xl py-3 pl-12 pr-4 text-sm font-medium focus:ring-4 focus:ring-red-500/10 transition-all placeholder:text-zinc-600 text-white"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <button onClick={() => setIsAddModalOpen(true)} className="flex items-center gap-2 bg-gray-900 text-white px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl hover:-translate-y-1 transition-all active:scale-95">
+          <button onClick={() => setIsAddModalOpen(true)} className="flex items-center gap-2 bg-red-600 text-white px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl hover:-translate-y-1 transition-all active:scale-95 shadow-red-600/20">
             <FaPlus size={10} /> Add New User
           </button>
         </div>
@@ -132,16 +132,16 @@ const UserList = () => {
         {/* KPI Strip */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            { label: "Total Corps", val: users?.length, color: "teal", icon: <FaShieldAlt /> },
-            { label: "Executives", val: users?.filter(u => u.isAdmin).length, color: "blue", icon: <FaUserShield /> },
-            { label: "Active Field", val: users?.filter(u => u.isActive && !u.isAdmin).length, color: "emerald", icon: <FaCheck /> },
-            { label: "Intelligence", val: "Optimal", color: "indigo", icon: <FaShieldAlt /> }
+            { label: "Total Accounts", val: users?.length, color: "zinc", icon: <FaShieldAlt /> },
+            { label: "Admins", val: users?.filter(u => u.isAdmin).length, color: "red", icon: <FaUserShield /> },
+            { label: "Active Customers", val: users?.filter(u => u.isActive && !u.isAdmin).length, color: "zinc", icon: <FaCheck /> },
+            { label: "Status", val: "Online", color: "zinc", icon: <FaShieldAlt /> }
           ].map((kpi, i) => (
-            <div key={i} className={`bg-${kpi.color}-50 p-6 rounded-[2rem] border border-${kpi.color}-100 flex items-center gap-4`}>
-              <div className={`w-12 h-12 rounded-2xl bg-${kpi.color}-600 text-white flex items-center justify-center shadow-lg`}>{kpi.icon}</div>
+            <div key={i} className={`bg-zinc-900/50 p-6 rounded-[2rem] border border-zinc-900 flex items-center gap-4`}>
+              <div className={`w-12 h-12 rounded-2xl ${kpi.color === 'red' ? 'bg-red-600 text-white' : 'bg-zinc-800 text-zinc-400'} flex items-center justify-center shadow-lg`}>{kpi.icon}</div>
               <div>
-                <p className={`text-[10px] font-black text-${kpi.color}-600 uppercase tracking-widest`}>{kpi.label}</p>
-                <h4 className="text-2xl font-black text-gray-900 tracking-tight">{kpi.val}</h4>
+                <p className={`text-[10px] font-black ${kpi.color === 'red' ? 'text-red-500' : 'text-zinc-500'} uppercase tracking-widest`}>{kpi.label}</p>
+                <h4 className="text-2xl font-black text-white tracking-tight">{kpi.val}</h4>
               </div>
             </div>
           ))}
@@ -152,12 +152,12 @@ const UserList = () => {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="bg-white rounded-[3rem] border border-gray-100 shadow-2xl shadow-gray-200/30 overflow-hidden"
+          className="bg-zinc-950 rounded-[3rem] border border-zinc-900 shadow-2xl shadow-zinc-900/30 overflow-hidden"
         >
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-gray-50/50 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
+                <tr className="bg-zinc-900/50 text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
                   <th className="px-8 py-6">User Profile</th>
                   <th className="px-8 py-6">Connectivity</th>
                   <th className="px-8 py-6">Status</th>
@@ -168,12 +168,12 @@ const UserList = () => {
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {filteredUsers.map((user) => (
-                  <motion.tr key={user._id} variants={itemVariants} className="group hover:bg-teal-50/10 transition-colors">
+                  <motion.tr key={user._id} variants={itemVariants} className="group hover:bg-zinc-900/50 transition-colors">
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-4">
-                        <div className={`w-12 h-12 rounded-2xl p-[2px] ${user.isActive ? 'bg-gradient-to-br from-teal-500 to-teal-700' : 'bg-gray-200'} shadow-lg`}>
-                          <div className="w-full h-full bg-white rounded-[14px] overflow-hidden">
-                            {user.image ? <img src={user.image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-teal-600 font-black uppercase">{user.username.charAt(0)}</div>}
+                        <div className={`w-12 h-12 rounded-2xl p-[2px] ${user.isActive ? 'bg-gradient-to-br from-red-600 to-black' : 'bg-zinc-800'} shadow-lg`}>
+                          <div className="w-full h-full bg-black rounded-[14px] overflow-hidden">
+                            {user.image ? <img src={user.image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-zinc-500 font-black uppercase">{user.username.charAt(0)}</div>}
                           </div>
                         </div>
                         <div>
@@ -188,8 +188,8 @@ const UserList = () => {
                     </td>
                     <td className="px-8 py-6">
                       <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border 
-                          ${user._id === superAdminId ? 'bg-purple-50 text-purple-700 border-purple-100' : (user.isAdmin ? 'bg-teal-50 text-teal-700 border-teal-100' : 'bg-gray-100 text-gray-500 border-gray-200')}`}>
-                        {user._id === superAdminId ? "Super User" : (user.isAdmin ? "Executive" : "Customer")}
+                          ${user._id === superAdminId ? 'bg-red-900/20 text-red-500 border-red-900/50' : (user.isAdmin ? 'bg-zinc-800 text-white border-zinc-700' : 'bg-zinc-900 text-zinc-500 border-zinc-800')}`}>
+                        {user._id === superAdminId ? "Super Admin" : (user.isAdmin ? "Admin" : "Customer")}
                       </span>
                     </td>
                     <td className="px-8 py-6">
@@ -209,8 +209,8 @@ const UserList = () => {
                       <button onClick={(e) => { e.stopPropagation(); setOpenActionId(openActionId === user._id ? null : user._id); }} className="p-2 text-gray-300 hover:text-gray-900 transition-colors"><FaEllipsisV /></button>
                       <AnimatePresence>
                         {openActionId === user._id && (
-                          <motion.div ref={dropdownRef} initial={{ opacity: 0, scale: 0.9, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 10 }} className="absolute right-8 top-full mt-2 w-48 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 p-2 text-left">
-                            <button onClick={() => handleEditClick(user)} className="w-full flex items-center gap-3 p-3 text-xs font-bold text-gray-600 hover:bg-teal-50 hover:text-teal-600 rounded-xl transition-all"><FaUserEdit /> Edit Profile</button>
+                          <motion.div ref={dropdownRef} initial={{ opacity: 0, scale: 0.9, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 10 }} className="absolute right-8 top-full mt-2 w-48 bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-800 z-50 p-2 text-left">
+                            <button onClick={() => handleEditClick(user)} className="w-full flex items-center gap-3 p-3 text-xs font-bold text-zinc-400 hover:bg-zinc-800 hover:text-white rounded-xl transition-all"><FaUserEdit /> Edit Profile</button>
                             {user._id !== superAdminId && <button onClick={() => toggleUserStatus(user)} className={`w-full flex items-center gap-3 p-3 text-xs font-bold rounded-xl transition-all ${user.isActive ? 'text-rose-500 hover:bg-rose-50' : 'text-emerald-600 hover:bg-emerald-50'}`}>{user.isActive ? <><FaBan /> Restrict Access</> : <><FaCheck /> Grant Access</>}</button>}
                             {!user.isAdmin && <button onClick={() => handleDeleteClick(user._id)} className="w-full flex items-center gap-3 p-3 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl transition-all border-t border-gray-50 mt-1"><FaTrashAlt /> Delete User</button>}
                           </motion.div>
@@ -239,10 +239,10 @@ const UserList = () => {
               <div className="p-8 lg:p-12">
                 <div className="flex justify-between items-start mb-10">
                   <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-teal-600 text-white flex items-center justify-center shadow-xl shadow-teal-500/20"><FaUserShield size={24} /></div>
+                    <div className="w-14 h-14 rounded-2xl bg-red-600 text-white flex items-center justify-center shadow-xl shadow-red-600/20"><FaUserShield size={24} /></div>
                     <div>
-                      <h3 className="text-2xl font-black text-gray-900 tracking-tight">{isAddModalOpen ? 'CREATE NEW USER' : 'MODIFY USER'}</h3>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">{isAddModalOpen ? 'Registration Mode Active' : `Profile ID: ${selectedUser?._id.substring(0, 16)}`}</p>
+                      <h3 className="text-2xl font-black text-white tracking-tight">{isAddModalOpen ? 'CREATE NEW USER' : 'MODIFY USER'}</h3>
+                      <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em]">{isAddModalOpen ? 'Profile Creation' : `Profile ID: ${selectedUser?._id.substring(0, 16)}`}</p>
                     </div>
                   </div>
                   <button onClick={() => { setIsEditModalOpen(false); setIsAddModalOpen(false); setSelectedUser(null); }} className="p-4 text-gray-300 hover:text-rose-500 transition-colors"><FaTimes size={24} /></button>

@@ -68,10 +68,10 @@ const Profile = () => {
   const inputClass = "w-full bg-zinc-900 border border-zinc-800 text-white text-sm font-medium rounded-sm px-4 py-3 focus:border-red-600 focus:outline-none placeholder:text-zinc-600 transition-colors";
   const labelClass = "block text-xs font-bold uppercase tracking-widest text-zinc-400 mb-2";
 
-  if (loadingProfile) return <div className="min-h-screen bg-black flex items-center justify-center"><Loader /></div>;
+  if (loadingProfile) return <div className="min-h-screen bg-[#050505] flex items-center justify-center"><Loader /></div>;
 
   return (
-    <div className="min-h-screen bg-black text-white pt-24 pb-20">
+    <div className="min-h-screen bg-[#050505] text-white pt-24 pb-20">
       <div className="max-w-4xl mx-auto px-6">
 
         <div className="flex flex-col md:flex-row gap-8 items-start">

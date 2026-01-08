@@ -17,7 +17,7 @@ const Favorites = () => {
   }, [dispatch]);
 
   return (
-    <div className="min-h-screen bg-black text-white pt-24 md:pt-32 pb-20 overflow-hidden">
+    <div className="min-h-screen bg-[#050505] text-white pt-24 md:pt-32 pb-20 overflow-hidden">
       <div className="max-w-[1440px] mx-auto px-6">
         {/* Editorial Header */}
         <header className="mb-20 relative">

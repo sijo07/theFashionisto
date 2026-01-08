@@ -1,10 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&family=Inter:wght@300;400;500;600;700;800;900&family=Italiana&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --color-bg-primary: #000000;
+  --color-bg-primary: #050505;
   --color-bg-secondary: #121212;
   --color-bg-card: #18181b;
   --color-accent: #EF4444;
@@ -57,4 +57,12 @@ body {
 
 .font-fashion {
   font-family: 'Playfair Display', serif;
+}
+
+.font-italiana {
+  font-family: 'Italiana', sans-serif;
+}
+
+.font-cinzel {
+  font-family: 'Cinzel', serif;
 }

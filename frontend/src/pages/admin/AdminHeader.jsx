@@ -62,7 +62,7 @@ const AdminHeader = ({ title, subtitle, children }) => {
     const breadcrumbs = location.pathname.split('/').filter(x => x).map(p => p.charAt(0).toUpperCase() + p.slice(1));
 
     return (
-        <header className="sticky top-0 z-50 w-full bg-black border-b border-zinc-800 flex items-center justify-between px-6 py-4 lg:px-8">
+        <header className="sticky top-0 z-50 w-full bg-[#050505] border-b border-zinc-800 flex items-center justify-between px-6 py-4 lg:px-8">
             <div className="flex flex-col">
                 <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">
                     <span className="hover:text-red-500 cursor-pointer transition-colors">Admin</span>

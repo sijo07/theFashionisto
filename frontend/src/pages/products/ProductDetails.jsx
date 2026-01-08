@@ -107,11 +107,11 @@ const ProductDetails = () => {
     }
   }, [product, cartItems, selectedSize]);
 
-  if (isLoading) return <div className="min-h-screen bg-black flex items-center justify-center"><Loader /></div>;
+  if (isLoading) return <div className="min-h-screen bg-[#050505] flex items-center justify-center"><Loader /></div>;
   if (error || !product) return <Message variant="danger">{error?.data?.message || "Product not found"}</Message>;
 
   return (
-    <div className="bg-black min-h-screen text-white pt-24 pb-20">
+    <div className="bg-[#050505] min-h-screen text-white pt-24 pb-20">
       <div className="max-w-[1200px] mx-auto px-6">
 
         {/* Breadcrumb / Back */}

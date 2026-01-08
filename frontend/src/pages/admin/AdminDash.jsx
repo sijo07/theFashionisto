@@ -81,7 +81,7 @@ const AdminDashboard = () => {
 
   const isLoading = loadingSales || loadingCustomers || loadingOrders || loadingProducts;
 
-  if (isLoading) return <div className="min-h-screen bg-black flex items-center justify-center"><Loader /></div>;
+  if (isLoading) return <div className="min-h-screen bg-[#050505] flex items-center justify-center"><Loader /></div>;
 
   const StatCard = ({ title, value, icon: Icon, trend, colorClass }) => (
     <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-sm relative overflow-hidden group hover:border-zinc-700 transition-colors">
@@ -101,8 +101,8 @@ const AdminDashboard = () => {
   );
 
   return (
-    <div className="min-h-screen bg-black text-white pb-20 font-sans">
-      <AdminHeader title="Command Center" subtitle="Real-time System Overwatch" />
+    <div className="min-h-screen bg-[#050505] text-white pb-20 font-sans">
+      <AdminHeader title="Executive Dashboard" subtitle="Performance Overview" />
 
       <main className="px-6 lg:px-8 py-8 max-w-[1600px] mx-auto space-y-8">
 
