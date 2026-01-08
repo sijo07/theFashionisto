@@ -10,14 +10,14 @@ const configureMiddleware = (app) => {
     })
   );
 
-  // CORS – allow your frontend to connect
+  // Security headers
   app.use(
-    cors({
-      origin: process.env.CLIENT_URL || "*", // e.g., http://localhost:5173
-      credentials: true,
-      methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    helmet({
+      crossOriginResourcePolicy: false, // Important if serving images/files
     })
   );
+
+  // CORS is handled in server.js for better control over Vercel/Production environments
 
   // Rate limiting for protection
   const limiter = rateLimit({
