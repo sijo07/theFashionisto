@@ -1,9 +1,9 @@
-export { default as Footer } from "./footer";
-export { default as Loader } from "./loader";
-export { default as Message } from "./message";
-export { default as PrivateRoute } from "./privateRoute";
-export { default as ProgressSteps } from "./progressSteps";
-export { default as Hero } from "./hero";
-export { default as HighHero } from "./highHero";
-export { default as Contact } from "./contact";
+export { default as Footer } from "./Footer";
+export { default as Loader } from "./Loader";
+export { default as Message } from "./Message";
+export { default as PrivateRoute } from "./PrivateRoute";
+export { default as ProgressSteps } from "./ProgressSteps";
+export { default as Hero } from "./Hero";
+export { default as HighHero } from "./HighHero";
+export { default as Contact } from "./Contact";
 export { default as CategoryFilter } from "./CategoryFilter";

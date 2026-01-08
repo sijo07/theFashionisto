@@ -15,7 +15,7 @@ import {
 import CategoryForm from "../../components/CategoryForm";
 import Modal from "../../components/Modal";
 import AdminHeader from "./AdminHeader";
-import Loader from "../../components/loader";
+import Loader from "../../components/Loader";
 
 const CategoryList = () => {
   const { data: categories, refetch } = useFetchCategoriesQuery();

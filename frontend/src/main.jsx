@@ -8,40 +8,39 @@ import { Route, RouterProvider, createRoutesFromElements } from "react-router";
 import { createBrowserRouter } from "react-router-dom";
 
 
-import PrivateRoute from "./components/privateRoute";
-import {
-  AdminRoute,
-  CategoryList,
-  ProductList,
-  AllProducts,
-  ProductUpdate,
-  UserList,
-  AdminDash,
-  OrderList,
-  Inventory,
-} from "./pages/admin/index.js";
+import PrivateRoute from "./components/PrivateRoute";
+import AdminRoute from "./pages/admin/AdminRoute.jsx";
+// Admin Pages
+import AdminDash from "./pages/admin/AdminDash.jsx";
+import UserList from "./pages/admin/UserList.jsx";
+import CategoryList from "./pages/admin/CategoryList.jsx";
+import ProductList from "./pages/admin/ProductList.jsx";
+import AllProducts from "./pages/admin/AllProducts.jsx";
+import ProductUpdate from "./pages/admin/ProductUpdate.jsx";
+import OrderList from "./pages/admin/OrderList.jsx";
+import Inventory from "./pages/admin/Inventory.jsx"; // Added based on original content
 // Auth
-const Login = lazy(() => import("./pages/auth/login.jsx"));
-const Register = lazy(() => import("./pages/auth/register.jsx"));
+const Login = lazy(() => import("./pages/auth/Login.jsx")); // Changed to PascalCase
+const Register = lazy(() => import("./pages/auth/Register.jsx")); // Changed to PascalCase
 const ErrorPage = lazy(() => import("./pages/ErrorPage.jsx"));
 const NotFound = lazy(() => import("./pages/NotFound.jsx"));
 
-import Profile from "./pages/user/profile";
-import ChangePassword from "./pages/user/changePass.jsx";
+import Profile from "./pages/user/Profile.jsx"; // Changed to PascalCase
+import ChangePassword from "./pages/user/ChangePass.jsx"; // Changed to PascalCase
 
-const Home = lazy(() => import("./pages/home.jsx"));
+const Home = lazy(() => import("./pages/Home.jsx")); // Changed to PascalCase
 
-import Favorites from "./pages/products/favorites.jsx";
-import ProductDetails from "./pages/products/productDetails.jsx";
+import Favorites from "./pages/products/Favorites.jsx"; // Changed to PascalCase
+import ProductDetails from "./pages/products/ProductDetails.jsx"; // Changed to PascalCase
 
-import Cart from "./pages/cart.jsx";
-import Shop from "./pages/shop.jsx";
+import Cart from "./pages/Cart.jsx"; // Changed to PascalCase
+import Shop from "./pages/Shop.jsx"; // Changed to PascalCase
 
-import Shipping from "./pages/orders/shipping.jsx";
-import PlaceOrder from "./pages/orders/placeOrder.jsx";
-import Order from "./pages/orders/order.jsx";
+import Shipping from "./pages/orders/Shipping.jsx"; // Changed to PascalCase
+import PlaceOrder from "./pages/orders/PlaceOrder.jsx"; // Changed to PascalCase
+import Order from "./pages/orders/Order.jsx"; // Changed to PascalCase
 import UserOrders from "./pages/orders/UserOrders.jsx";
-import Contact from "./components/contact.jsx";
+import Contact from "./components/Contact.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
