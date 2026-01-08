@@ -7,7 +7,7 @@ import cors from "cors";
 import connectDB from "./config/db.js";
 import configureMiddleware from "./config/middleware.js";
 import errorHandler from "./middlewares/errorHandler.js";
-import { initGridFS } from "./config/gridfs.js";
+// import { initGridFS } from "./config/gridfs.js";
 
 import userRoutes from "./routes/userRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
@@ -25,7 +25,7 @@ const app = express();
 // We call it but don't await at top level for serverless cold-start efficiency
 // connectDB() handles its own internal checks or connection pooling via mongoose
 connectDB().then(() => {
-  initGridFS();
+  // initGridFS();
 });
 
 // ---------------- Core Middleware ----------------
