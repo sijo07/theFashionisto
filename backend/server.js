@@ -7,7 +7,7 @@ import cors from "cors";
 import connectDB from "./config/db.js";
 import configureMiddleware from "./config/middleware.js";
 import errorHandler from "./middlewares/errorHandler.js";
-// import { initGridFS } from "./config/gridfs.js";
+import { initGridFS } from "./config/gridfs.js";
 
 import userRoutes from "./routes/userRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
