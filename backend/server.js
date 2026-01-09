@@ -17,7 +17,7 @@ import orderRoutes from "./routes/orderRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 
 dotenv.config();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 3004;
 
 // ---------------- Initialize App ----------------
 const app = express();
@@ -35,19 +35,15 @@ app.use(cors({
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
 
-    // During development or if CLIENT_URL is not set, we might want to be permissive
-    // But for production with credentials: true, we must return the specific origin, not unique "*"
-    const allowedOrigin = process.env.CLIENT_URL || "http://localhost:5173";
+    const allowedOrigins = [
+      process.env.CLIENT_URL,
+      "http://localhost:8004",
+      "https://thefashionisto.vercel.app" // Add your production URL here
+    ].filter(Boolean);
 
-    if (origin === allowedOrigin || origin === "http://localhost:5173") {
+    if (allowedOrigins.includes(origin) || !origin || origin.endsWith(".vercel.app")) {
       callback(null, true);
     } else {
-      // Debugging info
-      // console.log("Blocked Origin:", origin);
-      // Allow vercel deployments
-      if (origin.endsWith(".vercel.app")) {
-        return callback(null, true);
-      }
       callback(new Error('Not allowed by CORS'));
     }
   },

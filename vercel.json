@@ -23,8 +23,12 @@
             "destination": "api/index.js"
         },
         {
-            "source": "/(.*)",
+            "source": "/((?!api|uploads).*)",
             "destination": "frontend/$1"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "frontend/index.html"
         }
     ]
 }
