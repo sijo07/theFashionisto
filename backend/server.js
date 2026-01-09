@@ -72,7 +72,7 @@ app.use(async (req, res, next) => {
       console.error("DB Connection Failed in Middleware:", error);
       return res.status(500).json({
         error: "Database Connection Failed",
-        details: process.env.NODE_ENV === "production" ? "Check Server Logs" : error.message,
+        details: error.message, // process.env.NODE_ENV === "production" ? "Check Server Logs" : error.message,
         hint: "Check MONGO_URI"
       });
     }
