@@ -26,7 +26,13 @@ const app = express();
 // We call it but don't await at top level for serverless cold-start efficiency
 // connectDB() handles its own internal checks or connection pooling via mongoose
 connectDB().then(() => {
-  initGridFS();
+  try {
+    initGridFS();
+  } catch (err) {
+    console.error("GridFS Init Failed (Non-fatal):", err);
+  }
+}).catch(err => {
+  console.error("Initial DB Connection Promise Failed:", err);
 });
 
 // ---------------- Core Middleware ----------------
@@ -44,6 +50,7 @@ app.use(cors({
     if (allowedOrigins.includes(origin) || !origin || origin.endsWith(".vercel.app")) {
       callback(null, true);
     } else {
+      console.warn(`CORS Blocked Origin: ${origin}`); // Log blocked origins
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -60,12 +67,13 @@ app.use(async (req, res, next) => {
   if (mongoose.connection.readyState !== 1) {
     try {
       await connectDB();
-      initGridFS();
+      try { initGridFS(); } catch (e) { console.error("GridFS Lazy Init Failed:", e); }
     } catch (error) {
       console.error("DB Connection Failed in Middleware:", error);
       return res.status(500).json({
         error: "Database Connection Failed",
-        details: process.env.NODE_ENV === "production" ? "Please check MONGO_URI" : error.message
+        details: process.env.NODE_ENV === "production" ? "Check Server Logs" : error.message,
+        hint: "Check MONGO_URI"
       });
     }
   }
@@ -99,20 +107,24 @@ app.get("/api/test", (req, res) => {
 });
 
 app.get("/api/debug", (req, res) => {
-  res.json({
-    status: "debug",
-    env: {
-      MONGO_URI: process.env.MONGO_URI ? "Defined" : "MISSING",
-      JWT_SECRET: process.env.JWT_SECRET ? "Defined" : "MISSING",
-      NODE_ENV: process.env.NODE_ENV,
-      PORT: process.env.PORT,
-    },
-    db: {
-      state: mongoose.connection.readyState, // 0: disconnected, 1: connected, 2: connecting, 3: disconnecting
-      host: mongoose.connection.host,
-    },
-    time: new Date().toISOString()
-  });
+  try {
+    res.json({
+      status: "debug",
+      env: {
+        MONGO_URI: process.env.MONGO_URI ? "Defined" : "MISSING",
+        JWT_SECRET: process.env.JWT_SECRET ? "Defined" : "MISSING",
+        NODE_ENV: process.env.NODE_ENV,
+        PORT: process.env.PORT,
+      },
+      db: {
+        state: mongoose.connection.readyState, // 0: disconnected, 1: connected, 2: connecting, 3: disconnecting
+        host: mongoose.connection.host,
+      },
+      time: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({ status: "error", error: error.message, stack: error.stack });
+  }
 });
 
 // ---------------- Global Error Handler ----------------
