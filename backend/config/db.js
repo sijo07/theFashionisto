@@ -2,13 +2,16 @@ import mongoose from "mongoose";
 
 const connectDB = async () => {
   try {
-    const mongoUri = process.env.MONGO_URI || "MISSING_URI";
+    if (!process.env.MONGO_URI) {
+      throw new Error("MONGO_URI is not defined in environment variables");
+    }
+    const mongoUri = process.env.MONGO_URI;
     console.log(`Attempting connection to: ${mongoUri.substring(0, 15)}...`);
-    const conn = await mongoose.connect(process.env.MONGO_URI);
+    const conn = await mongoose.connect(mongoUri);
     console.log(`Successfully Connected to MongoDB: ${conn.connection.host}`);
   } catch (error) {
-    console.error(`ERROR: ${error.message}`);
-    // process.exit(1); // Do not crash on Vercel to allow debugging
+    console.error(`DB Connection ERROR: ${error.message}`);
+    throw error; // Re-throw to be caught by middleware
   }
 };
 

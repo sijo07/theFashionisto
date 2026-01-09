@@ -1,5 +1,6 @@
 import asyncHandler from "express-async-handler";
 import Product from "../models/productModel.js";
+import Category from "../models/categoryModel.js";
 import formidable from "formidable";
 import { generateId } from "../utils/idGenerator.js";
 

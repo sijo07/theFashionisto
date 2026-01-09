@@ -60,11 +60,13 @@ app.use(async (req, res, next) => {
   if (mongoose.connection.readyState !== 1) {
     try {
       await connectDB();
-      // Initialize GridFS if needed, though initGridFS logic handles its own checks
       initGridFS();
     } catch (error) {
       console.error("DB Connection Failed in Middleware:", error);
-      return res.status(500).json({ error: "Database Connection Failed" });
+      return res.status(500).json({
+        error: "Database Connection Failed",
+        details: process.env.NODE_ENV === "production" ? "Please check MONGO_URI" : error.message
+      });
     }
   }
   next();
@@ -99,9 +101,16 @@ app.get("/api/test", (req, res) => {
 app.get("/api/debug", (req, res) => {
   res.json({
     status: "debug",
-    mongoUriConfigured: !!process.env.MONGO_URI,
-    mongoUriPrefix: process.env.MONGO_URI ? process.env.MONGO_URI.substring(0, 15) + "..." : "MISSING",
-    dbState: mongoose.connection.readyState, // 0: disconnected, 1: connected, 2: connecting, 3: disconnecting
+    env: {
+      MONGO_URI: process.env.MONGO_URI ? "Defined" : "MISSING",
+      JWT_SECRET: process.env.JWT_SECRET ? "Defined" : "MISSING",
+      NODE_ENV: process.env.NODE_ENV,
+      PORT: process.env.PORT,
+    },
+    db: {
+      state: mongoose.connection.readyState, // 0: disconnected, 1: connected, 2: connecting, 3: disconnecting
+      host: mongoose.connection.host,
+    },
     time: new Date().toISOString()
   });
 });
