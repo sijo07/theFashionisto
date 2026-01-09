@@ -17,9 +17,9 @@ const connectDB = async () => {
     return conn;
   } catch (error) {
     console.error(`Error: ${error.message}`);
-    // In production (Vercel), we want to ensure this error is visible in function logs
+    // Log full error for debugging
     console.error("Full DB Error:", error);
-    // process.exit(1); // Do NOT exit in serverless, let the function fail or handle it
+    // process.exit(1); // Keep this commented out or handle gracefully based on preference
     throw error;
   }
 };
