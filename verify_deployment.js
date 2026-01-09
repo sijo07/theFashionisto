@@ -23,3 +23,4 @@ const checkEndpoint = async (url) => {
 };
 
 checkEndpoint("https://thefashionisto.vercel.app/api/debug");
+checkEndpoint("https://thefashionisto.vercel.app/");
