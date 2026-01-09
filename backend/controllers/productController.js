@@ -144,37 +144,32 @@ const removeProduct = asyncHandler(async (req, res) => {
 });
 
 const fetchProducts = asyncHandler(async (req, res) => {
-  try {
-    const pageSize = 6;
+  const pageSize = 6;
 
-    const keyword = req.query.keyword
-      ? {
-        brand: {
-          $regex: req.query.keyword,
-          $options: "i",
-        },
-      }
-      : {};
+  const keyword = req.query.keyword
+    ? {
+      brand: {
+        $regex: req.query.keyword,
+        $options: "i",
+      },
+    }
+    : {};
 
-    const count = await Product.countDocuments({ ...keyword });
-    const products = await Product.find({ ...keyword })
-      .populate({
-        path: "category",
-        select: "name parent",
-        populate: { path: "parent", select: "name" }
-      })
-      .limit(pageSize);
+  const count = await Product.countDocuments({ ...keyword });
+  const products = await Product.find({ ...keyword })
+    .populate({
+      path: "category",
+      select: "name parent",
+      populate: { path: "parent", select: "name" }
+    })
+    .limit(pageSize);
 
-    res.json({
-      products,
-      page: 1,
-      pages: Math.ceil(count / pageSize),
-      hasMore: false,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Server Error" });
-  }
+  res.json({
+    products,
+    page: 1,
+    pages: Math.ceil(count / pageSize),
+    hasMore: false,
+  });
 });
 
 const fetchProductById = asyncHandler(async (req, res) => {
@@ -193,16 +188,11 @@ const fetchProductById = asyncHandler(async (req, res) => {
 });
 
 const fetchAllProducts = asyncHandler(async (req, res) => {
-  try {
-    const products = await Product.find({})
-      .populate("category", "name parent isMainCategory")
-      .sort({ createdAt: -1 });
+  const products = await Product.find({})
+    .populate("category", "name parent isMainCategory")
+    .sort({ createdAt: -1 });
 
-    res.json(products);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Server Error" });
-  }
+  res.json(products);
 });
 
 const addProductReview = asyncHandler(async (req, res) => {
