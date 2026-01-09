@@ -1,27 +1,48 @@
 import mongoose from "mongoose";
 
+let cached = global.mongoose;
+
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
+
 const connectDB = async () => {
-  try {
+  if (process.env.NODE_ENV !== "production") {
+    // In development, just connect normally to avoid HMR issues with caching sometimes
+    if (mongoose.connection.readyState === 1) {
+      return mongoose.connection;
+    }
+  }
+
+  if (cached.conn) {
+    // console.log("Using cached MongoDB connection");
+    return cached.conn;
+  }
+
+  if (!cached.promise) {
+    const opts = {
+      bufferCommands: false,
+    };
+
     if (!process.env.MONGO_URI) {
-      console.error("FATAL: MONGO_URI is missing in environment variables.");
-      throw new Error("MONGO_URI is not defined");
+      throw new Error("MONGO_URI is missing in environment variables");
     }
 
-    const mongoUri = process.env.MONGO_URI;
-    // Log masked URI for debugging
-    console.log(`Attempting connection to MongoDB... (URI starts with: ${mongoUri.substring(0, 15)})`);
-
-    const conn = await mongoose.connect(mongoUri);
-
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
-    return conn;
-  } catch (error) {
-    console.error(`Error: ${error.message}`);
-    // Log full error for debugging
-    console.error("Full DB Error:", error);
-    // process.exit(1); // Keep this commented out or handle gracefully based on preference
-    throw error;
+    console.log("Creating new MongoDB connection...");
+    cached.promise = mongoose.connect(process.env.MONGO_URI, opts).then((mongoose) => {
+      console.log(`MongoDB Connected: ${mongoose.connection.host}`);
+      return mongoose;
+    });
   }
+
+  try {
+    cached.conn = await cached.promise;
+  } catch (e) {
+    cached.promise = null;
+    throw e;
+  }
+
+  return cached.conn;
 };
 
 export default connectDB;

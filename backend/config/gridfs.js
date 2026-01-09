@@ -3,18 +3,30 @@ import mongoose from "mongoose";
 let gridfsBucket;
 
 const initGridFS = () => {
-  const init = () => {
-    gridfsBucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-      bucketName: "uploads",
-    });
-    console.log("GridFS (Native) initialized successfully");
-  };
+  if (gridfsBucket) return gridfsBucket; // Already initialized
 
-  if (mongoose.connection.readyState === 1) {
-    init();
-  } else {
-    mongoose.connection.once("open", init);
+  const db = mongoose.connection.db;
+  if (!db) {
+    // console.warn("GridFS: DB not ready yet");
+    return;
   }
+
+  gridfsBucket = new mongoose.mongo.GridFSBucket(db, {
+    bucketName: "uploads",
+  });
+  console.log("GridFS (Native) initialized successfully");
+  return gridfsBucket;
 };
 
-export { gridfsBucket, initGridFS };
+const getGridFSBucket = () => {
+  if (!gridfsBucket) {
+    const bucket = initGridFS();
+    if (!bucket) {
+      throw new Error("GridFS Bucket not initialized. database not ready?");
+    }
+    return bucket;
+  }
+  return gridfsBucket;
+}
+
+export { initGridFS, getGridFSBucket };
