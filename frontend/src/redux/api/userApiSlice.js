@@ -1,13 +1,11 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { apiSlice } from "./apiSlice";
 import { USERS_URL } from "../constants";
 
-export const userApiSlice = createApi({
-  reducerPath: "userApi",
-  baseQuery: fetchBaseQuery({ baseUrl: USERS_URL }),
+export const userApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation({
       query: (data) => ({
-        url: `/auth`,
+        url: `${USERS_URL}/auth`,
         method: "POST",
         body: data,
       }),
@@ -15,14 +13,14 @@ export const userApiSlice = createApi({
 
     logout: builder.mutation({
       query: () => ({
-        url: `/logout`,
+        url: `${USERS_URL}/logout`,
         method: "POST",
       }),
     }),
 
     register: builder.mutation({
       query: (data) => ({
-        url: "/",
+        url: `${USERS_URL}`,
         method: "POST",
         body: data,
       }),
@@ -30,45 +28,45 @@ export const userApiSlice = createApi({
 
     updateProfile: builder.mutation({
       query: (data) => ({
-        url: "/profile",
+        url: `${USERS_URL}/profile`,
         method: "PUT",
         body: data,
       }),
     }),
 
     getProfile: builder.query({
-      query: () => "/profile",
+      query: () => `${USERS_URL}/profile`,
       keepUnusedDataFor: 5,
     }),
 
     changePassword: builder.mutation({
       query: (data) => ({
-        url: `/profile/password`,
+        url: `${USERS_URL}/profile/password`,
         method: "PUT",
         body: data,
       }),
     }),
 
     getUsers: builder.query({
-      query: () => "/",
+      query: () => `${USERS_URL}`,
       providesTags: ["User"],
     }),
 
     deleteUser: builder.mutation({
       query: (userId) => ({
-        url: `/${userId}`,
+        url: `${USERS_URL}/${userId}`,
         method: "DELETE",
       }),
       invalidatesTags: ["User"],
     }),
 
     getUserDetails: builder.query({
-      query: (userId) => `/${userId}`,
+      query: (userId) => `${USERS_URL}/${userId}`,
     }),
 
     updateUser: builder.mutation({
       query: ({ userId, ...data }) => ({
-        url: `/${userId}`,
+        url: `${USERS_URL}/${userId}`,
         method: "PUT",
         body: data,
       }),
@@ -76,12 +74,12 @@ export const userApiSlice = createApi({
     }),
 
     getUserReviewedProducts: builder.query({
-      query: () => `/user/reviewed-products`,
+      query: () => `${USERS_URL}/user/reviewed-products`,
     }),
 
     createUser: builder.mutation({
       query: (data) => ({
-        url: "/create-by-admin",
+        url: `${USERS_URL}/create-by-admin`,
         method: "POST",
         body: data,
       }),
