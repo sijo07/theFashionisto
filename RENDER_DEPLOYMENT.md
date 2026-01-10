@@ -20,7 +20,7 @@ If Vercel's serverless environment is causing too many headaches with database c
     -   **Root Directory**: `.` (Leave empty).
     -   **Runtime**: `Node`.
     -   **Build Command**: `npm install`
-    -   **Start Command**: `npm run backend` (Important! Check your package.json).
+    -   **Start Command**: `npm start` (This uses `node backend/server.js`).
 5.  **Environment Variables** (Advanced -> Add Environment Variable):
     -   `MONGO_URI`: Your MongoDB Connection String.
     -   `JWT_SECRET`: Your secret.
