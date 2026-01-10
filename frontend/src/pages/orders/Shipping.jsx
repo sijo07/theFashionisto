@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
   saveShippingAddress,
-  savePaymentMethod,
 } from "../../redux/features/cart/cartSlice";
 import { toast } from "react-toastify";
 import ProgressSteps from "../../components/ProgressSteps";
@@ -22,26 +21,13 @@ const Shipping = () => {
   const [pinCode, setPinCode] = useState(shippingAddress.pinCode || "");
   const [state, setState] = useState(shippingAddress.state || "");
   const [country, setCountry] = useState(shippingAddress.country || "");
-  const [paymentMethod, setPaymentMethod] = useState("Credit Card");
-
-  // Card details state
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvv, setCardCvv] = useState("");
-  const [cardHolder, setCardHolder] = useState("");
+  /* Payment state moved to Payment.jsx */
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const submitHandler = (e) => {
     e.preventDefault();
-
-    if (paymentMethod === "Credit Card") {
-      if (!cardNumber || !cardExpiry || !cardCvv || !cardHolder) {
-        toast.error("Please provide complete card information");
-        return;
-      }
-    }
 
     dispatch(
       saveShippingAddress({
@@ -55,8 +41,7 @@ const Shipping = () => {
         country,
       })
     );
-    dispatch(savePaymentMethod(paymentMethod));
-    navigate("/placeorder");
+    navigate("/payment");
   };
 
   useEffect(() => {
@@ -214,128 +199,14 @@ const Shipping = () => {
                 </div>
               </section>
 
-              {/* Payment Section */}
-              <section>
-                <div className="flex items-center gap-4 mb-8">
-                  <span className="text-red-600 font-black text-xl italic">03.</span>
-                  <h2 className="text-sm font-black uppercase tracking-[0.3em]">Payment Method</h2>
-                  <div className="flex-1 h-px bg-zinc-900"></div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                  <label
-                    className={`cursor-pointer border p-6 flex items-center gap-4 transition-all duration-300 ${paymentMethod === "Credit Card"
-                      ? "border-red-600 bg-red-900/10"
-                      : "border-zinc-900 bg-zinc-950/30 hover:border-zinc-700"
-                      }`}
-                  >
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="Credit Card"
-                      checked={paymentMethod === "Credit Card"}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="hidden"
-                    />
-                    <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${paymentMethod === "Credit Card" ? "border-red-500" : "border-zinc-700"
-                      }`}>
-                      {paymentMethod === "Credit Card" && <div className="w-3 h-3 bg-red-500 rounded-full"></div>}
-                    </div>
-                    <div>
-                      <span className="block font-black uppercase tracking-widest text-xs mb-1">Card Payment</span>
-                      <span className="text-zinc-600 text-[10px] font-mono">SECURE TRANSIT</span>
-                    </div>
-                    <FaCreditCard className={`ml-auto text-xl ${paymentMethod === "Credit Card" ? "text-red-500" : "text-zinc-800"}`} />
-                  </label>
-
-                  <label
-                    className={`cursor-pointer border p-6 flex items-center gap-4 transition-all duration-300 ${paymentMethod === "COD"
-                      ? "border-red-600 bg-red-900/10"
-                      : "border-zinc-900 bg-zinc-950/30 hover:border-zinc-700"
-                      }`}
-                  >
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="COD"
-                      checked={paymentMethod === "COD"}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="hidden"
-                    />
-                    <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${paymentMethod === "COD" ? "border-red-500" : "border-zinc-700"
-                      }`}>
-                      {paymentMethod === "COD" && <div className="w-3 h-3 bg-red-500 rounded-full"></div>}
-                    </div>
-                    <div>
-                      <span className="block font-black uppercase tracking-widest text-xs mb-1">On Delivery</span>
-                      <span className="text-zinc-600 text-[10px] font-mono">PAY AT DOOR</span>
-                    </div>
-                    <FaMoneyBillWave className={`ml-auto text-xl ${paymentMethod === "COD" ? "text-red-500" : "text-zinc-800"}`} />
-                  </label>
-                </div>
-
-                {/* Conditional Card Form */}
-                {paymentMethod === "Credit Card" && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="p-8 bg-zinc-950 border border-zinc-900 space-y-6"
-                  >
-                    <div>
-                      <label className={labelClass}>Cardholder Name</label>
-                      <input
-                        type="text"
-                        value={cardHolder}
-                        onChange={(e) => setCardHolder(e.target.value.toUpperCase())}
-                        className={inputClass}
-                        placeholder="NAME ON CARD"
-                      />
-                    </div>
-                    <div>
-                      <label className={labelClass}>Card Number</label>
-                      <input
-                        type="text"
-                        maxLength="19"
-                        value={cardNumber}
-                        onChange={(e) => setCardNumber(e.target.value.replace(/\s?/g, '').replace(/(\d{4})/g, '$1 ').trim())}
-                        className={inputClass}
-                        placeholder="0000 0000 0000 0000"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <label className={labelClass}>Expiry Date</label>
-                        <input
-                          type="text"
-                          maxLength="5"
-                          value={cardExpiry}
-                          onChange={(e) => setCardExpiry(e.target.value.replace(/\//g, '').replace(/(\d{2})/g, '$1/').replace(/\/$/, ''))}
-                          className={inputClass}
-                          placeholder="MM/YY"
-                        />
-                      </div>
-                      <div>
-                        <label className={labelClass}>Security Code (CVV)</label>
-                        <input
-                          type="password"
-                          maxLength="3"
-                          value={cardCvv}
-                          onChange={(e) => setCardCvv(e.target.value)}
-                          className={inputClass}
-                          placeholder="000"
-                        />
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </section>
+              {/* Payment Section Removed - now in Payment.jsx */}
 
               <div className="pt-8 flex justify-end">
                 <button
                   type="submit"
                   className="w-full md:w-auto bg-red-600 text-white font-black uppercase tracking-[0.3em] px-12 py-5 hover:bg-white hover:text-black transition-all duration-500 flex items-center justify-center gap-4 group shadow-[0_0_20px_rgba(239,68,68,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]"
                 >
-                  Continue to Order <FaArrowRight className="group-hover:translate-x-2 transition-transform duration-300" />
+                  Continue to Payment <FaArrowRight className="group-hover:translate-x-2 transition-transform duration-300" />
                 </button>
               </div>
             </form>

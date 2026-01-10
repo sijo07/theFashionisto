@@ -22,6 +22,7 @@ const productSchema = mongoose.Schema(
       type: String,
       required: true
     },
+    images: [String],
     productId: {
       type: String,
       unique: true,

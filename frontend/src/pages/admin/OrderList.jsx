@@ -49,16 +49,9 @@ const OrderList = () => {
     }
   };
 
-  const handleMarkAsPaid = async (orderId) => {
-    try {
-      await payOrder({ orderId, details: { status: "COMPLETED" } }).unwrap();
-      refetch();
-      toast.success("Financial settlement confirmed.");
-      setOpenActionId(null);
-    } catch (err) {
-      toast.error("Settlement failed.");
-    }
-  };
+
+
+  /* Modal logic removed - now navigating to AdminOrderDetails page */
 
   const filteredOrders = orders?.filter(order => {
     const matchesSearch = order._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -101,7 +94,7 @@ const OrderList = () => {
   return (
     <div className="min-h-screen bg-[#050505] font-sans text-white pb-20 overflow-x-hidden">
       <AdminHeader title="Order History" subtitle={`Tracking ${orders?.length || 0} customer transactions for your brand.`}>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto">
           <div className="relative group w-full lg:w-64">
             <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-teal-600 transition-colors" />
             <input
@@ -112,8 +105,8 @@ const OrderList = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <button onClick={handleExportCSV} className="flex items-center gap-2 bg-red-600 text-white px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest hover:-translate-y-1 transition-all shadow-xl shadow-red-600/20">
-            <FaDownload size={10} /> Export Data
+          <button onClick={handleExportCSV} className="flex items-center justify-center gap-2 bg-red-600 text-white px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest hover:-translate-y-1 transition-all shadow-xl shadow-red-600/20 whitespace-nowrap">
+            <FaDownload size={10} /> Export
           </button>
         </div>
       </AdminHeader>
@@ -121,95 +114,91 @@ const OrderList = () => {
       <div className="px-6 lg:px-10 py-10 max-w-[1700px] mx-auto space-y-10">
 
         {/* KPI Strip */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-zinc-900 p-6 rounded-[2rem] border border-zinc-800 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-red-600 text-white flex items-center justify-center shadow-lg"><FaBoxOpen /></div>
-            <div><p className="text-[10px] font-black text-red-500 uppercase tracking-widest">Gross Sales</p><h4 className="text-2xl font-black text-white">₹{orders?.reduce((a, b) => a + b.totalPrice, 0).toLocaleString()}</h4></div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="bg-zinc-900/50 backdrop-blur-xl p-6 rounded-[2rem] border border-zinc-800/50 flex items-center gap-4 hover:bg-zinc-900/80 transition-all duration-500 group">
+            <div className="w-14 h-14 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center shadow-[0_0_20px_rgba(239,68,68,0.2)] group-hover:bg-red-500 group-hover:text-white transition-all"><FaBoxOpen size={20} /></div>
+            <div><p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest group-hover:text-zinc-400 transition-colors">Gross Sales</p><h4 className="text-2xl font-black text-white mt-1">₹{orders?.reduce((a, b) => a + b.totalPrice, 0).toLocaleString()}</h4></div>
           </div>
-          <div className="bg-zinc-900 p-6 rounded-[2rem] border border-zinc-800 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-zinc-800 text-zinc-400 flex items-center justify-center shadow-lg"><FaCalendarAlt /></div>
-            <div><p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Active Orders</p><h4 className="text-2xl font-black text-white">{orders?.filter(o => o.orderStatus === 'Pending' || o.orderStatus === 'Processing').length} Units</h4></div>
+          <div className="bg-zinc-900/50 backdrop-blur-xl p-6 rounded-[2rem] border border-zinc-800/50 flex items-center gap-4 hover:bg-zinc-900/80 transition-all duration-500 group">
+            <div className="w-14 h-14 rounded-2xl bg-teal-500/10 text-teal-500 flex items-center justify-center shadow-[0_0_20px_rgba(20,184,166,0.2)] group-hover:bg-teal-500 group-hover:text-white transition-all"><FaCalendarAlt size={20} /></div>
+            <div><p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest group-hover:text-zinc-400 transition-colors">Active Orders</p><h4 className="text-2xl font-black text-white mt-1">{orders?.filter(o => o.orderStatus === 'Pending' || o.orderStatus === 'Processing').length} Units</h4></div>
           </div>
-          <div className="bg-zinc-900 p-6 rounded-[2rem] border border-zinc-800 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-zinc-800 text-zinc-400 flex items-center justify-center shadow-lg"><FaTruck /></div>
-            <div><p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">In Transit</p><h4 className="text-2xl font-black text-white">{orders?.filter(o => o.isPaid && !o.isDelivered).length} Units</h4></div>
+          <div className="bg-zinc-900/50 backdrop-blur-xl p-6 rounded-[2rem] border border-zinc-800/50 flex items-center gap-4 hover:bg-zinc-900/80 transition-all duration-500 group">
+            <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.2)] group-hover:bg-indigo-500 group-hover:text-white transition-all"><FaTruck size={20} /></div>
+            <div><p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest group-hover:text-zinc-400 transition-colors">In Transit</p><h4 className="text-2xl font-black text-white mt-1">{orders?.filter(o => o.isPaid && !o.isDelivered).length} Units</h4></div>
           </div>
-          <div className="bg-zinc-900 p-6 rounded-[2rem] border border-zinc-800 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-zinc-800 text-zinc-400 flex items-center justify-center shadow-lg"><FaCheckCircle /></div>
-            <div><p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Fulfilled</p><h4 className="text-2xl font-black text-white">{orders?.filter(o => o.isDelivered).length} Units</h4></div>
+          <div className="bg-zinc-900/50 backdrop-blur-xl p-6 rounded-[2rem] border border-zinc-800/50 flex items-center gap-4 hover:bg-zinc-900/80 transition-all duration-500 group">
+            <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.2)] group-hover:bg-emerald-500 group-hover:text-white transition-all"><FaCheckCircle size={20} /></div>
+            <div><p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest group-hover:text-zinc-400 transition-colors">Fulfilled</p><h4 className="text-2xl font-black text-white mt-1">{orders?.filter(o => o.isDelivered).length} Units</h4></div>
           </div>
         </div>
 
         {/* Order Table */}
-        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="bg-zinc-950 rounded-[3rem] border border-zinc-900 shadow-2xl shadow-zinc-900/30 overflow-hidden">
+        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="bg-zinc-900/30 backdrop-blur-xl rounded-[3rem] border border-zinc-800 shadow-2xl overflow-hidden relative">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-red-500/5 rounded-full blur-[100px] pointer-events-none -mr-20 -mt-20"></div>
+
           {/* Desktop Table View */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left">
+          <div className="hidden md:block overflow-x-auto relative z-10">
+            <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-gray-50/50 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
-                  <th className="px-8 py-6">Product Item</th>
-                  <th className="px-8 py-6">Transaction ID</th>
-                  <th className="px-8 py-6">Client</th>
-                  <th className="px-8 py-6">Total</th>
-                  <th className="px-8 py-6">Status</th>
-                  <th className="px-8 py-6 text-right">Method</th>
+                <tr className="border-b border-zinc-800/50 text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                  <th className="px-8 py-8">Product Details</th>
+                  <th className="px-8 py-8">Order Ref</th>
+                  <th className="px-8 py-8">Customer</th>
+                  <th className="px-8 py-8">Amount</th>
+                  <th className="px-8 py-8">Status</th>
+                  <th className="px-8 py-8 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-zinc-800/30">
                 {filteredOrders.flatMap(o => o.orderItems.map((item, i) => ({ o, item, i }))).map(({ o, item, i }) => (
-                  <motion.tr key={`${o._id}-${i}`} variants={itemVariants} className="group hover:bg-teal-50/10 transition-colors">
+                  <motion.tr key={`${o._id}-${i}`} variants={itemVariants} className="group hover:bg-white/[0.02] transition-colors">
                     <td className="px-8 py-6">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-gray-100 overflow-hidden border border-gray-100 shrink-0 shadow-sm transition-transform duration-500 group-hover:scale-110">
-                          <img src={item.image} className="w-full h-full object-cover" />
+                      <div className="flex items-center gap-5">
+                        <div className="w-14 h-14 rounded-xl bg-zinc-800 overflow-hidden border border-zinc-700/50 shrink-0 shadow-sm group-hover:border-zinc-500 transition-colors">
+                          <img src={item.image} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
                         </div>
                         <div className="max-w-[200px]">
-                          <p className="text-xs font-black text-gray-900 uppercase tracking-tight line-clamp-1">{item.name}</p>
-                          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Qty: {item.qty} {item.size && `• ${item.size}`}</p>
+                          <p className="text-xs font-bold text-zinc-200 uppercase tracking-tight line-clamp-1 group-hover:text-white transition-colors">{item.name}</p>
+                          <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Qty: {item.qty} {item.size && `• ${item.size}`}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-8 py-6">
-                      <span className="text-[10px] font-mono text-white bg-zinc-800 px-2 py-1 rounded-md border border-zinc-700 font-bold uppercase tracking-tighter">
+                      <span className="text-[10px] font-mono text-zinc-400 bg-zinc-800/50 px-2 py-1.5 rounded-lg border border-zinc-700/50 font-bold uppercase tracking-widest group-hover:text-white group-hover:border-zinc-600 transition-colors">
                         #{o.orderId || o._id.substring(0, 8).toUpperCase()}
                       </span>
                     </td>
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center text-[10px] font-bold uppercase border border-indigo-100">{o.user?.username?.charAt(0) || "G"}</div>
+                        <div className="w-8 h-8 rounded-full bg-zinc-800 text-zinc-400 flex items-center justify-center text-[10px] font-black uppercase border border-zinc-700 group-hover:bg-zinc-700 group-hover:text-white transition-colors">{o.user?.username?.charAt(0) || "G"}</div>
                         <div>
-                          <p className="text-xs font-bold text-gray-800 uppercase leading-none">{o.user?.username || "Guest"}</p>
-                          <p className="text-[9px] text-gray-400 lowercase">{o.user?.email || "No link"}</p>
+                          <p className="text-xs font-bold text-zinc-300 uppercase leading-none group-hover:text-white transition-colors">{o.user?.username || "Guest"}</p>
+                          <p className="text-[9px] text-zinc-600 font-medium lowercase mt-0.5">{o.user?.email || "No link"}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-8 py-6">
-                      <p className="text-sm font-black text-gray-900">₹{item.price.toLocaleString()}</p>
-                      <div className="flex gap-1 mt-1">
-                        <span className={`text-[8px] font-black px-1.5 py-0.5 rounded border uppercase tracking-tighter ${o.isPaid ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
-                          {o.isPaid ? 'Settled' : 'Unpaid'}
+                      <p className="text-sm font-black text-white">₹{item.price.toLocaleString()}</p>
+                      <div className="flex gap-1 mt-1.5">
+                        <span className={`text-[8px] font-black px-1.5 py-0.5 rounded border uppercase tracking-widest ${o.isPaid ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>
+                          {o.isPaid ? 'Paid' : 'Due'}
                         </span>
                       </div>
                     </td>
                     <td className="px-8 py-6">
-                      <div className="flex items-center gap-2">
-                        <span className={`w-1.5 h-1.5 rounded-full ${(item.itemStatus || o.orderStatus) === 'Pending' ? 'bg-amber-500' : (item.itemStatus || o.orderStatus) === 'Processing' ? 'bg-blue-500' : (item.itemStatus || o.orderStatus) === 'Shipped' ? 'bg-purple-500' : (item.itemStatus || o.orderStatus) === 'Delivered' ? 'bg-emerald-500' : 'bg-gray-400'} animate-pulse`}></span>
-                        <span className="text-[10px] font-black uppercase text-gray-500 tracking-widest">{item.itemStatus || o.orderStatus}</span>
+                      <div className="flex items-center gap-2.5">
+                        <span className={`w-1.5 h-1.5 rounded-full ${(item.itemStatus || o.orderStatus) === 'Pending' ? 'bg-amber-500' : (item.itemStatus || o.orderStatus) === 'Processing' ? 'bg-blue-500' : (item.itemStatus || o.orderStatus) === 'Shipped' ? 'bg-purple-500' : (item.itemStatus || o.orderStatus) === 'Delivered' ? 'bg-emerald-500' : 'bg-zinc-600'} shadow-[0_0_10px_currentColor] opacity-80`}></span>
+                        <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest group-hover:text-zinc-300 transition-colors">{item.itemStatus || o.orderStatus}</span>
                       </div>
                     </td>
                     <td className="px-8 py-6 text-right relative">
-                      <button onClick={() => { setSelectedOrder(o); setOpenActionId(`${o._id}-${i}`); }} className="p-2 text-gray-300 hover:text-gray-900 transition-colors"><FaEllipsisV /></button>
-                      <AnimatePresence>
-                        {openActionId === `${o._id}-${i}` && (
-                          <motion.div ref={dropdownRef} initial={{ opacity: 0, scale: 0.9, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 10 }} className="absolute right-8 top-full mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 p-2 text-left">
-                            <button onClick={() => setSelectedOrder(o)} className="w-full flex items-center gap-3 p-3 text-xs font-bold text-gray-600 hover:bg-teal-50 hover:text-teal-600 rounded-xl transition-all"><FaEye /> Visual Review</button>
-                            <div className="border-t border-gray-50 my-1"></div>
-                            <button onClick={() => handleStatusUpdate(o._id, item._id, 'Processing')} className="w-full flex items-center gap-3 p-3 text-xs font-bold text-blue-600 hover:bg-blue-50 rounded-xl transition-all"><FaBoxOpen /> Set Processing</button>
-                            <button onClick={() => handleStatusUpdate(o._id, item._id, 'Shipped')} className="w-full flex items-center gap-3 p-3 text-xs font-bold text-purple-600 hover:bg-purple-50 rounded-xl transition-all"><FaTruck /> Set Shipped</button>
-                            <button onClick={() => handleStatusUpdate(o._id, item._id, 'Delivered')} className="w-full flex items-center gap-3 p-3 text-xs font-bold text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"><FaCheckCircle /> Set Delivered</button>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                      <Link
+                        to={`/admin/order/${o._id}`}
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-zinc-500 hover:text-white hover:bg-zinc-800 transition-all ml-auto"
+                      >
+                        <FaEye size={12} />
+                      </Link>
                     </td>
                   </motion.tr>
                 ))}
@@ -217,144 +206,75 @@ const OrderList = () => {
             </table>
           </div>
 
-          {/* Mobile Card View */}
+          {/* Mobile Card View - Editorial Style (Order Centric) */}
           <div className="md:hidden space-y-4 p-4">
-            {filteredOrders.flatMap(o => o.orderItems.map((item, i) => ({ o, item, i }))).map(({ o, item, i }) => (
-              <div key={`${o._id}-${i}-mobile`} className="bg-zinc-900/50 rounded-2xl border border-zinc-800 p-5 space-y-4">
-                {/* Header: ID, User, Status */}
-                <div className="flex justify-between items-start">
+            {filteredOrders.map((o) => (
+              <motion.div key={o._id} variants={itemVariants} className="bg-zinc-900/40 backdrop-blur-xl p-6 rounded-[2.5rem] border border-zinc-800/50 shadow-2xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-500/5 rounded-full blur-3xl -mr-10 -mt-10"></div>
+
+                {/* Header: ID & Status */}
+                <div className="flex justify-between items-start mb-6 relative z-10">
                   <div>
-                    <span className="text-[10px] font-mono text-zinc-400 bg-zinc-800/50 px-2 py-1 rounded border border-zinc-700/50">
-                      #{o.orderId || o._id.substring(0, 8).toUpperCase()}
+                    <span className="px-3 py-1 rounded-full border border-white/10 bg-white/5 text-[10px] font-black text-zinc-400 uppercase tracking-widest backdrop-blur-md">
+                      #{o._id.substring(0, 8)}
                     </span>
-                    <p className="text-xs font-bold text-white mt-2">{o.user?.username || "Guest"}</p>
+                    <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-wide mt-2">{moment(o.createdAt).format("MMM DD, YYYY")}</p>
                   </div>
-                  <div className={`px-2 py-1 rounded flex items-center gap-1.5 ${o.isPaid ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
-                    <div className={`w-1.5 h-1.5 rounded-full ${o.isPaid ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                    <span className="text-[9px] font-black uppercase">{o.isPaid ? 'Paid' : 'Unpaid'}</span>
+                  <div className={`px-3 py-1.5 rounded-xl border flex items-center gap-2 ${o.isPaid ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-rose-500/10 border-rose-500/20 text-rose-400'}`}>
+                    <div className={`w-1.5 h-1.5 rounded-full ${o.isPaid ? 'bg-emerald-500' : 'bg-rose-500'} shadow-[0_0_8px_currentColor]`} />
+                    <span className="text-[9px] font-black uppercase tracking-widest">{o.isPaid ? 'Paid' : 'Due'}</span>
                   </div>
                 </div>
 
-                {/* Item Details */}
-                <div className="flex gap-4">
-                  <div className="w-16 h-16 rounded-xl bg-zinc-800 overflow-hidden border border-zinc-700 shrink-0">
-                    <img src={item.image} className="w-full h-full object-cover" />
+                {/* Main Info */}
+                <div className="flex items-center gap-4 mb-6 relative z-10">
+                  <div className="w-12 h-12 rounded-full bg-zinc-800 border-2 border-zinc-700 flex items-center justify-center text-lg font-black text-zinc-500">
+                    {o.user?.username?.charAt(0) || "G"}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-zinc-200 truncate">{item.name}</p>
-                    <div className="flex justify-between items-end mt-2">
-                      <div>
-                        <p className="text-[10px] text-zinc-500 font-bold uppercase">Qty: <span className="text-zinc-300">{item.qty}</span></p>
-                        <p className="text-[10px] text-zinc-500 font-bold uppercase">Total: <span className="text-zinc-300">₹{item.price.toLocaleString()}</span></p>
-                      </div>
+                  <div>
+                    <h4 className="text-sm font-black text-white uppercase tracking-tight">{o.user?.username || "Guest User"}</h4>
+                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">{o.orderItems.length} Items • ₹{o.totalPrice.toLocaleString()}</p>
+                  </div>
+                </div>
+
+                {/* Item Preview (Thumbnails) */}
+                <div className="flex -space-x-3 mb-6 relative z-10 pl-2">
+                  {o.orderItems.slice(0, 4).map((item, idx) => (
+                    <div key={idx} className="w-10 h-10 rounded-full border-2 border-zinc-900 bg-zinc-800 overflow-hidden relative shadow-lg">
+                      <img src={item.image} className="w-full h-full object-cover" alt="" />
                     </div>
-                  </div>
+                  ))}
+                  {o.orderItems.length > 4 && (
+                    <div className="w-10 h-10 rounded-full border-2 border-zinc-900 bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-zinc-500 z-10">
+                      +{o.orderItems.length - 4}
+                    </div>
+                  )}
                 </div>
 
-                {/* Status Bar */}
-                <div className="flex items-center gap-2 bg-zinc-950/50 p-3 rounded-xl border border-zinc-800/50">
-                  <div className={`w-2 h-2 rounded-full ${(item.itemStatus || o.orderStatus) === 'Pending' ? 'bg-amber-500' : (item.itemStatus || o.orderStatus) === 'Processing' ? 'bg-blue-500' : (item.itemStatus || o.orderStatus) === 'Shipped' ? 'bg-purple-500' : (item.itemStatus || o.orderStatus) === 'Delivered' ? 'bg-emerald-500' : 'bg-gray-400'}`} />
-                  <span className="text-[10px] font-black uppercase text-zinc-400 flex-1">{item.itemStatus || o.orderStatus}</span>
-
-                  {/* Mobile Action Trigger */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Basic toggle for mobile actions could go here, or just open the global detail modal
-                      setSelectedOrder(o);
-                    }}
-                    className="text-[10px] font-bold text-red-500 uppercase tracking-widest hover:text-white"
-                  >
-                    Manage
-                  </button>
+                {/* Global Status Indicator */}
+                <div className="mb-6 flex items-center gap-2 bg-zinc-900/50 p-3 rounded-xl border border-zinc-800/50">
+                  <div className={`w-2 h-2 rounded-full shadow-[0_0_8px_currentColor] 
+                        ${o.orderStatus === 'Pending' ? 'bg-amber-500' :
+                      o.orderStatus === 'Processing' ? 'bg-blue-500' :
+                        o.orderStatus === 'Shipped' ? 'bg-purple-500' :
+                          o.orderStatus === 'Delivered' ? 'bg-emerald-500' : 'bg-zinc-500'}`}
+                  />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
+                    Status: <span className="text-white">{o.orderStatus}</span>
+                  </span>
                 </div>
-              </div>
+
+                {/* Action Button */}
+                <Link to={`/admin/order/${o._id}`} className="block w-full py-4 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-widest text-center hover:bg-zinc-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] relative z-10 active:scale-95">
+                  View Manifest <FaEye className="inline ml-2 mb-0.5" />
+                </Link>
+
+              </motion.div>
             ))}
           </div>
+
         </motion.div>
       </div>
-
-      <AnimatePresence>
-        {selectedOrder && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-xl px-4 p-8">
-            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} className="bg-white rounded-[3rem] shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col relative border border-white/20">
-              <div className="p-8 lg:p-12 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-2xl bg-teal-600 text-white flex items-center justify-center shadow-xl shadow-teal-500/20"><FaEye size={24} /></div>
-                  <div>
-                    <h3 className="text-2xl font-black text-gray-900 tracking-tight">TRANSACTION_VISUALIZER</h3>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Active UUID: {selectedOrder._id}</p>
-                  </div>
-                </div>
-                <button onClick={() => setSelectedOrder(null)} className="p-4 text-gray-300 hover:text-rose-500 transition-colors"><FaTimes size={24} /></button>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-12 space-y-12">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                  <div className="lg:col-span-2 space-y-10">
-                    <div>
-                      <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 border-b border-gray-50 pb-2 flex items-center gap-2"><FaBoxOpen className="text-teal-600" /> Item Details</h4>
-                      <div className="space-y-4">
-                        {selectedOrder.orderItems.map((item, i) => (
-                          <div key={i} className="bg-gray-50/50 p-6 rounded-3xl border border-gray-100 flex items-center gap-6 group">
-                            <div className="w-20 h-20 rounded-2xl bg-white overflow-hidden border border-gray-100 group-hover:scale-110 transition-transform"><img src={item.image} className="w-full h-full object-cover" /></div>
-                            <div className="flex-1">
-                              <p className="text-sm font-black text-gray-900 uppercase">{item.name}</p>
-                              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Ref ID: {item.product}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-lg font-black text-teal-600">₹{item.price.toLocaleString()}</p>
-                              <p className="text-[10px] text-gray-400 font-bold uppercase">Qty: {item.qty}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="bg-gray-900 rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden">
-                      <h4 className="text-[10px] font-black text-teal-400 uppercase tracking-widest mb-6 flex items-center gap-2"><FaMoneyBillWave /> Financial Resolution</h4>
-                      <div className="grid grid-cols-2 gap-y-4 text-sm font-bold">
-                        <p className="text-gray-400">Items Base</p><p className="text-right">₹{selectedOrder.itemsPrice.toLocaleString()}</p>
-                        <p className="text-gray-400">Logistics Cost</p><p className="text-right">₹{selectedOrder.shippingPrice.toLocaleString()}</p>
-                        <p className="text-gray-400">System Tax</p><p className="text-right">₹{selectedOrder.taxPrice.toLocaleString()}</p>
-                        <div className="col-span-2 pt-6 mt-2 border-t border-white/10 flex justify-between items-center text-2xl font-black">
-                          <p className="text-teal-400 uppercase tracking-tighter">Gross Total</p>
-                          <p>₹{selectedOrder.totalPrice.toLocaleString()}</p>
-                        </div>
-                      </div>
-                      <div className="absolute top-0 right-0 w-40 h-40 bg-teal-500 opacity-10 rounded-full blur-[80px]"></div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-8">
-                    <div className="bg-gray-50 p-8 rounded-[2rem] border border-gray-100">
-                      <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2"><FaUserCircle /> Customer Profile</h4>
-                      <p className="text-sm font-black text-gray-900 uppercase">{selectedOrder.user?.username || "Guest User"}</p>
-                      <p className="text-xs text-gray-500 mt-1 font-medium">{selectedOrder.user?.email || "No email provided"}</p>
-                    </div>
-                    <div className="bg-gray-50 p-8 rounded-[2rem] border border-gray-100">
-                      <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2"><FaMapMarkerAlt /> Shipping Destination</h4>
-                      <div className="space-y-1">
-                        <p className="text-xs font-bold text-gray-700 uppercase">{selectedOrder.shippingAddress.address}</p>
-                        <p className="text-xs font-bold text-gray-700 uppercase">{selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.postalCode}</p>
-                        <p className="text-xs font-bold text-gray-700 uppercase">{selectedOrder.shippingAddress.country}</p>
-                      </div>
-                    </div>
-                    <div className="bg-teal-600 p-8 rounded-[2rem] text-white shadow-xl">
-                      <h4 className="text-[10px] font-black text-teal-200 uppercase tracking-widest mb-6 flex items-center gap-2"><FaCreditCard /> Payment Summary</h4>
-                      <p className="text-sm font-black uppercase">{selectedOrder.paymentMethod}</p>
-                      <div className={`inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest ${selectedOrder.isPaid ? 'bg-white text-teal-700' : 'bg-rose-500 text-white'}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${selectedOrder.isPaid ? 'bg-teal-500' : 'bg-white animate-pulse'}`}></span>
-                        {selectedOrder.isPaid ? 'Payment Confirmed' : 'Awaiting Settlement'}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };

@@ -55,7 +55,7 @@ const PlaceOrder = () => {
       <div className="max-w-[1440px] mx-auto px-6">
 
         <div className="mb-12">
-          <ProgressSteps step1 step2 step3 />
+          <ProgressSteps step1 step2 step3 step4 />
         </div>
 
         {cart.cartItems.length === 0 ? (

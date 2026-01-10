@@ -6,7 +6,7 @@ import { generateId } from "../utils/idGenerator.js";
 // Add Product
 const addProduct = asyncHandler(async (req, res) => {
   try {
-    const { name, brand, description, price, offer, category, sizes, quantity, image, isFeatured } =
+    const { name, brand, description, price, offer, category, sizes, quantity, image, images, isFeatured } =
       req.fields;
 
     // Validation
@@ -45,6 +45,20 @@ const addProduct = asyncHandler(async (req, res) => {
     }
     const imageUrl = imageData?.url || imageData;
 
+    // Parse images array
+    let imagesUrl = [];
+    if (images) {
+      if (typeof images === 'string') {
+        try {
+          imagesUrl = JSON.parse(images);
+        } catch (e) {
+          console.error("Error parsing images array:", e);
+        }
+      } else if (Array.isArray(images)) {
+        imagesUrl = images;
+      }
+    }
+
     const productId = await generateId("FSP", "product");
 
     const product = new Product({
@@ -59,6 +73,7 @@ const addProduct = asyncHandler(async (req, res) => {
       countInStock,
       quantity,
       image: imageUrl,
+      images: imagesUrl,
       isFeatured: isFeatured === 'true' || isFeatured === true,
     });
 
@@ -73,7 +88,7 @@ const addProduct = asyncHandler(async (req, res) => {
 // Update product
 const updateProductDetails = asyncHandler(async (req, res) => {
   try {
-    const { name, brand, description, price, offer, category, sizes, quantity, image, isFeatured } =
+    const { name, brand, description, price, offer, category, sizes, quantity, image, images, isFeatured } =
       req.fields;
 
     // Validation (Relaxed for partial updates)
@@ -105,11 +120,26 @@ const updateProductDetails = asyncHandler(async (req, res) => {
       imageUrl = image.url;
     }
 
+    // Parse images array
+    let imagesUrl;
+    if (images) {
+      if (typeof images === 'string') {
+        try {
+          imagesUrl = JSON.parse(images);
+        } catch (e) {
+          console.error("Error parsing images array:", e);
+        }
+      } else if (Array.isArray(images)) {
+        imagesUrl = images;
+      }
+    }
+
     const product = await Product.findByIdAndUpdate(
       req.params.id,
       {
         ...req.fields,
         image: imageUrl, // Ensure image is string URL
+        ...(imagesUrl && { images: imagesUrl }), // Only update if provided
         sizes: parsedSizes,
         countInStock,
         isFeatured: isFeatured === 'true' || isFeatured === true,

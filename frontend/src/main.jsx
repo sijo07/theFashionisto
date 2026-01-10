@@ -18,6 +18,7 @@ import ProductList from "./pages/admin/ProductList.jsx";
 import AllProducts from "./pages/admin/AllProducts.jsx";
 import ProductUpdate from "./pages/admin/ProductUpdate.jsx";
 import OrderList from "./pages/admin/OrderList.jsx";
+import AdminOrderDetails from "./pages/admin/AdminOrderDetails.jsx";
 import Inventory from "./pages/admin/Inventory.jsx"; // Added based on original content
 // Auth
 const Login = lazy(() => import("./pages/auth/Login.jsx")); // Changed to PascalCase
@@ -38,6 +39,7 @@ import Shop from "./pages/Shop.jsx"; // Changed to PascalCase
 
 import Shipping from "./pages/orders/Shipping.jsx"; // Changed to PascalCase
 import PlaceOrder from "./pages/orders/PlaceOrder.jsx"; // Changed to PascalCase
+import Payment from "./pages/orders/Payment.jsx";
 import Order from "./pages/orders/Order.jsx"; // Changed to PascalCase
 import UserOrders from "./pages/orders/UserOrders.jsx";
 import Contact from "./components/Contact.jsx";
@@ -85,6 +87,7 @@ const router = createBrowserRouter(
         <Route path="/profile" element={<Profile />} />
         <Route path="/changePassword" element={<ChangePassword />} />
         <Route path="/shipping" element={<Shipping />} />
+        <Route path="/payment" element={<Payment />} />
         <Route path="/placeOrder" element={<PlaceOrder />} />
         <Route path="/order/:id" element={<Order />} />
         <Route path="/user-orders" element={<UserOrders />} />
@@ -98,6 +101,7 @@ const router = createBrowserRouter(
         <Route path="productList/:pageNumber" element={<ProductList />} />
         <Route path="product/update/:_id" element={<ProductUpdate />} />
         <Route path="orderList" element={<OrderList />} />
+        <Route path="order/:id" element={<AdminOrderDetails />} />
         <Route path="dashboard" element={<AdminDash />} />
         <Route path="inventory" element={<Inventory />} />
       </Route>

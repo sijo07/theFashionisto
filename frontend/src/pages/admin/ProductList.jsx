@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import {
   FaCloudUploadAlt, FaLayerGroup, FaTags,
-  FaChevronRight, FaBox, FaRulerCombined
+  FaChevronRight, FaBox, FaRulerCombined, FaTrash, FaPlus
 } from "react-icons/fa";
 import AdminHeader from "./AdminHeader";
 
@@ -22,7 +22,7 @@ const ProductList = () => {
   const [sizeStock, setSizeStock] = useState({});
   const [sizeType, setSizeType] = useState("clothing");
   const [quantity, setQuantity] = useState("");
-  const [imageUrl, setImageUrl] = useState(null);
+  const [images, setImages] = useState([]);
 
   const navigate = useNavigate();
   const [createProduct] = useCreateProductMutation();
@@ -33,12 +33,19 @@ const ProductList = () => {
   const subCategories = categoriesData?.filter(c => c.parent && mainCategories.find(m => m._id === (c.parent?._id || c.parent))) || [];
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
+    const files = Array.from(e.target.files);
+
+    files.forEach(file => {
       const reader = new FileReader();
-      reader.onloadend = () => setImageUrl(reader.result);
+      reader.onloadend = () => {
+        setImages(prev => [...prev, reader.result]);
+      };
       reader.readAsDataURL(file);
-    }
+    });
+  };
+
+  const removeImage = (index) => {
+    setImages(images.filter((_, i) => i !== index));
   };
 
   const sizeMaps = {
@@ -62,7 +69,7 @@ const ProductList = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!imageUrl) return toast.error("Product image required.");
+    if (images.length === 0) return toast.error("At least one product image is required.");
     if (!selectedSub) return toast.error("Please select a sub-category.");
     const sizesArray = Object.entries(sizeStock).map(([size, stock]) => ({ size, stock: Number(stock) || 0 }));
     if (sizesArray.length === 0) return toast.error("Product requires at least one size variant.");
@@ -77,7 +84,8 @@ const ProductList = () => {
       formData.append("category", selectedSub);
       formData.append("sizes", JSON.stringify(sizesArray));
       formData.append("quantity", quantity);
-      formData.append("image", imageUrl);
+      formData.append("image", images[0]); // Main image
+      formData.append("images", JSON.stringify(images)); // All images
 
       await createProduct(formData).unwrap();
       toast.success("New product added to catalog.");
@@ -101,20 +109,54 @@ const ProductList = () => {
           <div className="lg:col-span-4 space-y-8">
             <div className="bg-zinc-950 p-6 rounded-sm border border-zinc-800">
               <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-400 mb-6 flex items-center gap-2">
-                <FaCloudUploadAlt /> Product Image
+                <FaCloudUploadAlt /> Product Gallery
               </h3>
 
-              <label className="group relative flex flex-col items-center justify-center w-full aspect-[3/4] border border-dashed border-zinc-800 hover:border-red-600 transition-colors cursor-pointer bg-zinc-900/50">
-                {imageUrl ? (
-                  <img src={imageUrl} className="w-full h-full object-cover" />
+              <div
+                onClick={() => document.getElementById('imageInput').click()}
+                className="group relative flex flex-col items-center justify-center w-full aspect-[3/4] border border-dashed border-zinc-800 hover:border-red-600 transition-colors cursor-pointer bg-zinc-900/50 overflow-hidden"
+              >
+                {images.length > 0 ? (
+                  <div className="w-full h-full relative group-hover:opacity-40 transition-opacity">
+                    <img src={images[0]} className="w-full h-full object-cover" />
+                    {images.length > 1 && (
+                      <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-sm backdrop-blur-sm">
+                        +{images.length - 1} more
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center text-zinc-600 group-hover:text-red-500 transition-colors">
                     <FaCloudUploadAlt size={32} className="mb-2" />
-                    <span className="text-xs font-bold uppercase">Upload Image</span>
+                    <span className="text-xs font-bold uppercase">Upload Images</span>
                   </div>
                 )}
-                <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
-              </label>
+                <input id="imageInput" type="file" multiple className="hidden" accept="image/*" onChange={handleImageChange} />
+              </div>
+
+              {images.length > 0 && (
+                <div className="grid grid-cols-4 gap-2 mt-4">
+                  {images.map((img, idx) => (
+                    <div key={idx} className="relative aspect-square border border-zinc-800 rounded-sm overflow-hidden group">
+                      <img src={img} className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => removeImage(idx)}
+                        type="button"
+                        className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-red-500 transition-opacity"
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => document.getElementById('imageInput').click()}
+                    className="aspect-square border border-dashed border-zinc-800 rounded-sm flex items-center justify-center text-zinc-600 hover:text-white hover:border-zinc-600 transition-all"
+                  >
+                    <FaPlus />
+                  </button>
+                </div>
+              )}
 
               <div className="mt-8 space-y-4">
                 <div>
