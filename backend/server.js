@@ -131,10 +131,9 @@ app.get("/api/debug", (req, res) => {
 app.use(errorHandler);
 
 // ---------------- Start Server (Local Only) ----------------
-if (process.env.NODE_ENV !== "production") {
-  app.listen(port, () => {
-    console.log(`🚀 Server running on port: ${port}`);
-  });
-}
+// ---------------- Start Server ----------------
+app.listen(port, "0.0.0.0", () => {
+  console.log(`🚀 Server running on port: ${port}`);
+});
 
 export default app;
