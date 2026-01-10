@@ -128,7 +128,8 @@ const Inventory = () => {
 
                 {/* Stock Table */}
                 <motion.div variants={containerVariants} initial="hidden" animate="visible" className="bg-white rounded-[3rem] border border-gray-100 shadow-2xl shadow-gray-200/30 overflow-hidden">
-                    <div className="overflow-x-auto">
+                    {/* Desktop Table */}
+                    <div className="hidden md:block overflow-x-auto">
                         <table className="w-full text-left">
                             <thead>
                                 <tr className="bg-gray-50/50 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
@@ -191,6 +192,59 @@ const Inventory = () => {
                                 })}
                             </tbody>
                         </table>
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="md:hidden space-y-4 p-4">
+                        {filteredInventory.map(item => {
+                            const status = getStatus(item.countInStock);
+                            return (
+                                <div key={item._id} className="bg-white rounded-[2rem] border border-gray-100 p-6 shadow-xl shadow-gray-200/50 space-y-6 relative overflow-hidden">
+                                    {/* Background Decor */}
+                                    <div className={`absolute top-0 right-0 w-24 h-24 bg-${status.color}-50 rounded-bl-[4rem] -mr-4 -mt-4 opacity-50 pointer-events-none`}></div>
+
+                                    <div className="flex justify-between items-start relative z-10">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-16 h-16 rounded-2xl bg-gray-50 overflow-hidden border border-gray-100 shadow-sm shrink-0">
+                                                <img src={item.image} className="w-full h-full object-cover" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{item.brand || "T-FASHIONISTO"}</p>
+                                                <h3 className="text-sm font-black text-gray-900 uppercase tracking-tight leading-tight">{item.name}</h3>
+                                                <span className="inline-block mt-2 px-2 py-1 bg-gray-100 text-[9px] font-black text-gray-500 uppercase tracking-widest rounded-md">
+                                                    {item.category?.name || "N/A"}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <button onClick={() => handleDelete(item._id)} className="p-2 text-gray-300 hover:text-rose-500 transition-colors"><FaTrash /></button>
+                                    </div>
+
+                                    <div className="bg-gray-50/80 rounded-2xl p-4 border border-gray-100">
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                            <FaWarehouse size={10} /> Stock Matrix
+                                        </p>
+                                        <div className="flex flex-wrap gap-3">
+                                            {item.sizes?.map((s, idx) => (
+                                                <div key={idx} className="flex flex-col items-center p-2 bg-white rounded-xl border border-gray-100 shadow-sm min-w-[3rem]">
+                                                    <span className="text-[9px] font-black text-gray-400 uppercase">{s.size}</span>
+                                                    <span className={`text-xs font-black ${s.stock < 5 ? 'text-rose-500' : 'text-gray-900'}`}>{s.stock}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-between pt-2">
+                                        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border bg-${status.color}-50 border-${status.color}-100`}>
+                                            <span className={`w-1.5 h-1.5 rounded-full bg-${status.color}-500 ${status.label === 'Operational' ? '' : 'animate-pulse'}`}></span>
+                                            <span className={`text-[9px] font-black uppercase tracking-widest text-${status.color}-600`}>{status.label}</span>
+                                        </div>
+                                        <button onClick={() => handleOpenModal(item)} className="px-6 py-2 bg-gray-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-gray-800 transition-all shadow-lg hover:shadow-xl active:scale-95 flex items-center gap-2">
+                                            <FaEdit /> Manage
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 </motion.div>
             </div>

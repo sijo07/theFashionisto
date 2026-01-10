@@ -142,7 +142,8 @@ const OrderList = () => {
 
         {/* Order Table */}
         <motion.div variants={containerVariants} initial="hidden" animate="visible" className="bg-zinc-950 rounded-[3rem] border border-zinc-900 shadow-2xl shadow-zinc-900/30 overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-gray-50/50 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
@@ -214,6 +215,61 @@ const OrderList = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-4 p-4">
+            {filteredOrders.flatMap(o => o.orderItems.map((item, i) => ({ o, item, i }))).map(({ o, item, i }) => (
+              <div key={`${o._id}-${i}-mobile`} className="bg-zinc-900/50 rounded-2xl border border-zinc-800 p-5 space-y-4">
+                {/* Header: ID, User, Status */}
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="text-[10px] font-mono text-zinc-400 bg-zinc-800/50 px-2 py-1 rounded border border-zinc-700/50">
+                      #{o.orderId || o._id.substring(0, 8).toUpperCase()}
+                    </span>
+                    <p className="text-xs font-bold text-white mt-2">{o.user?.username || "Guest"}</p>
+                  </div>
+                  <div className={`px-2 py-1 rounded flex items-center gap-1.5 ${o.isPaid ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
+                    <div className={`w-1.5 h-1.5 rounded-full ${o.isPaid ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                    <span className="text-[9px] font-black uppercase">{o.isPaid ? 'Paid' : 'Unpaid'}</span>
+                  </div>
+                </div>
+
+                {/* Item Details */}
+                <div className="flex gap-4">
+                  <div className="w-16 h-16 rounded-xl bg-zinc-800 overflow-hidden border border-zinc-700 shrink-0">
+                    <img src={item.image} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-zinc-200 truncate">{item.name}</p>
+                    <div className="flex justify-between items-end mt-2">
+                      <div>
+                        <p className="text-[10px] text-zinc-500 font-bold uppercase">Qty: <span className="text-zinc-300">{item.qty}</span></p>
+                        <p className="text-[10px] text-zinc-500 font-bold uppercase">Total: <span className="text-zinc-300">₹{item.price.toLocaleString()}</span></p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Status Bar */}
+                <div className="flex items-center gap-2 bg-zinc-950/50 p-3 rounded-xl border border-zinc-800/50">
+                  <div className={`w-2 h-2 rounded-full ${(item.itemStatus || o.orderStatus) === 'Pending' ? 'bg-amber-500' : (item.itemStatus || o.orderStatus) === 'Processing' ? 'bg-blue-500' : (item.itemStatus || o.orderStatus) === 'Shipped' ? 'bg-purple-500' : (item.itemStatus || o.orderStatus) === 'Delivered' ? 'bg-emerald-500' : 'bg-gray-400'}`} />
+                  <span className="text-[10px] font-black uppercase text-zinc-400 flex-1">{item.itemStatus || o.orderStatus}</span>
+
+                  {/* Mobile Action Trigger */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Basic toggle for mobile actions could go here, or just open the global detail modal
+                      setSelectedOrder(o);
+                    }}
+                    className="text-[10px] font-bold text-red-500 uppercase tracking-widest hover:text-white"
+                  >
+                    Manage
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </motion.div>
       </div>

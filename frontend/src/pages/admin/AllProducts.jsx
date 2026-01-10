@@ -78,60 +78,101 @@ const AllProducts = () => {
 
         {/* Content View */}
         {viewMode === "list" ? (
-          <div className="overflow-x-auto border border-zinc-800 rounded-sm">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-zinc-900 text-xs font-bold uppercase tracking-wider text-zinc-400 border-b border-zinc-800">
-                  <th className="p-4">Product</th>
-                  <th className="p-4">Brand</th>
-                  <th className="p-4">Category</th>
-                  <th className="p-4">Price</th>
-                  <th className="p-4">Stock</th>
-                  <th className="p-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-800 bg-[#050505]">
-                {filteredProducts?.map((product) => (
-                  <tr key={product._id} className="hover:bg-zinc-900/50 transition-colors group">
-                    <td className="p-4">
-                      <div className="flex items-center gap-4">
-                        <img src={product.image} className="w-12 h-16 object-cover bg-zinc-800 border border-zinc-700" />
-                        <div className="max-w-[200px]">
-                          <p className="text-sm font-bold text-white truncate">{product.name}</p>
-                          <p className="text-[10px] text-zinc-400">ID: {product._id.substring(0, 8)}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-4 text-sm font-medium text-zinc-300">{product.brand}</td>
-                    <td className="p-4 text-sm text-zinc-400">
-                      <span className="bg-zinc-900 border border-zinc-700 px-2 py-1 rounded text-[10px] font-bold uppercase">
-                        {/* Safe access for category */}
-                        {product.category?.name || "Unassigned"}
-                      </span>
-                    </td>
-                    <td className="p-4 font-bold text-white">₹{product.price}</td>
-                    <td className="p-4">
-                      {product.countInStock < 10 ? (
-                        <span className="text-red-500 font-bold text-xs flex items-center gap-1"><FaBox /> {product.countInStock} (Low)</span>
-                      ) : (
-                        <span className="text-emerald-500 font-bold text-xs flex items-center gap-1"><FaBox /> {product.countInStock}</span>
-                      )}
-                    </td>
-                    <td className="p-4 text-right">
-                      <div className="flex items-center justify-end gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
-                        <Link to={`/admin/product/update/${product._id}`} className="p-2 bg-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-700 rounded-sm">
-                          <FaEdit size={14} />
-                        </Link>
-                        <button onClick={() => handleDelete(product._id)} className="p-2 bg-zinc-800 text-red-500 hover:bg-red-900/30 rounded-sm">
-                          <FaTrash size={14} />
-                        </button>
-                      </div>
-                    </td>
+          <>
+            <div className="hidden md:block overflow-x-auto border border-zinc-800 rounded-sm">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-zinc-900 text-xs font-bold uppercase tracking-wider text-zinc-400 border-b border-zinc-800">
+                    <th className="p-4">Product</th>
+                    <th className="p-4">Brand</th>
+                    <th className="p-4">Category</th>
+                    <th className="p-4">Price</th>
+                    <th className="p-4">Stock</th>
+                    <th className="p-4 text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-zinc-800 bg-[#050505]">
+                  {filteredProducts?.map((product) => (
+                    <tr key={product._id} className="hover:bg-zinc-900/50 transition-colors group">
+                      <td className="p-4">
+                        <div className="flex items-center gap-4">
+                          <img src={product.image} className="w-12 h-16 object-cover bg-zinc-800 border border-zinc-700" />
+                          <div className="max-w-[200px]">
+                            <p className="text-sm font-bold text-white truncate">{product.name}</p>
+                            <p className="text-[10px] text-zinc-400">ID: {product._id.substring(0, 8)}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4 text-sm font-medium text-zinc-300">{product.brand}</td>
+                      <td className="p-4 text-sm text-zinc-400">
+                        <span className="bg-zinc-900 border border-zinc-700 px-2 py-1 rounded text-[10px] font-bold uppercase">
+                          {/* Safe access for category */}
+                          {product.category?.name || "Unassigned"}
+                        </span>
+                      </td>
+                      <td className="p-4 font-bold text-white">₹{product.price}</td>
+                      <td className="p-4">
+                        {product.countInStock < 10 ? (
+                          <span className="text-red-500 font-bold text-xs flex items-center gap-1"><FaBox /> {product.countInStock} (Low)</span>
+                        ) : (
+                          <span className="text-emerald-500 font-bold text-xs flex items-center gap-1"><FaBox /> {product.countInStock}</span>
+                        )}
+                      </td>
+                      <td className="p-4 text-right">
+                        <div className="flex items-center justify-end gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
+                          <Link to={`/admin/product/update/${product._id}`} className="p-2 bg-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-700 rounded-sm">
+                            <FaEdit size={14} />
+                          </Link>
+                          <button onClick={() => handleDelete(product._id)} className="p-2 bg-zinc-800 text-red-500 hover:bg-red-900/30 rounded-sm">
+                            <FaTrash size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile List View (Cards) */}
+            <div className="md:hidden space-y-4">
+              {filteredProducts?.map((product) => (
+                <div key={product._id} className="bg-zinc-900/40 border border-zinc-800 rounded-lg p-3 flex gap-4">
+                  <div className="w-20 h-24 shrink-0 bg-zinc-950 rounded border border-zinc-800 overflow-hidden">
+                    <img src={product.image} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1 min-w-0 flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-[10px] font-bold text-red-500 uppercase tracking-wide leading-none mb-1">{product.brand}</p>
+                          <h3 className="text-sm font-bold text-white truncate">{product.name}</h3>
+                        </div>
+                        <span className="text-xs font-black text-white bg-zinc-950 px-2 py-1 rounded border border-zinc-800">₹{product.price}</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-[9px] text-zinc-500 font-bold uppercase bg-zinc-900 px-1.5 py-0.5 rounded">{product.category?.name || "Unassigned"}</span>
+                        {product.countInStock < 10 ? (
+                          <span className="text-[9px] text-red-500 font-bold uppercase flex items-center gap-1"><FaBox size={8} /> {product.countInStock} Left</span>
+                        ) : (
+                          <span className="text-[9px] text-emerald-500 font-bold uppercase flex items-center gap-1"><FaBox size={8} /> Stock: {product.countInStock}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-3 mt-2 pt-2 border-t border-zinc-800/50">
+                      <Link to={`/admin/product/update/${product._id}`} className="flex items-center gap-2 text-[10px] font-bold text-zinc-400 hover:text-white uppercase">
+                        <FaEdit /> Edit
+                      </Link>
+                      <button onClick={() => handleDelete(product._id)} className="flex items-center gap-2 text-[10px] font-bold text-zinc-400 hover:text-red-500 uppercase">
+                        <FaTrash /> Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {filteredProducts?.map((product) => (

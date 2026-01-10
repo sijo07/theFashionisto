@@ -154,7 +154,7 @@ const UserList = () => {
           animate="visible"
           className="bg-zinc-950 rounded-[3rem] border border-zinc-900 shadow-2xl shadow-zinc-900/30 overflow-hidden"
         >
-          <div className="overflow-x-auto">
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-zinc-900/50 text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">
@@ -221,6 +221,58 @@ const UserList = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-4 p-4">
+            {filteredUsers.map((user) => (
+              <div key={user._id} className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-5 space-y-4 relative">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-12 h-12 rounded-xl p-[2px] ${user.isActive ? 'bg-gradient-to-br from-red-600 to-black' : 'bg-zinc-800'} shadow-lg shrink-0`}>
+                      <div className="w-full h-full bg-black rounded-[10px] overflow-hidden flex items-center justify-center text-zinc-500 font-black uppercase text-lg">
+                        {user.image ? <img src={user.image} className="w-full h-full object-cover" /> : user.username.charAt(0)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-black text-white uppercase tracking-tight">{user.username}</p>
+                        {user.isAdmin && <FaUserShield className="text-red-600 text-[10px]" />}
+                      </div>
+                      <p className="text-[10px] text-zinc-500 font-bold lowercase">{user.email}</p>
+                    </div>
+                  </div>
+
+                  <div className={`px-2 py-1 rounded border flex items-center gap-1.5 ${user.isActive ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-500' : 'border-rose-500/30 bg-rose-500/10 text-rose-500'}`}>
+                    <div className={`w-1.5 h-1.5 rounded-full ${user.isActive ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                    <span className="text-[9px] font-black uppercase">{user.isActive ? 'Active' : 'Locked'}</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-[10px]">
+                  <div className="bg-black/50 p-2 rounded-lg border border-zinc-800">
+                    <p className="text-zinc-500 font-bold uppercase">Role</p>
+                    <p className="text-zinc-300 font-bold">{user.isAdmin ? (user._id === superAdminId ? 'Super Admin' : 'Admin') : 'Customer'}</p>
+                  </div>
+                  <div className="bg-black/50 p-2 rounded-lg border border-zinc-800">
+                    <p className="text-zinc-500 font-bold uppercase">UID</p>
+                    <p className="text-zinc-300 font-mono">{user.userId || user._id.substring(0, 8)}</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-2 border-t border-zinc-800/50">
+                  <button onClick={() => handleEditClick(user)} className="flex-1 py-2 bg-zinc-800 hover:bg-zinc-700 text-white text-[10px] font-bold uppercase rounded-xl transition-colors">Edit</button>
+                  {user._id !== superAdminId && (
+                    <button onClick={() => toggleUserStatus(user)} className={`flex-1 py-2 text-[10px] font-bold uppercase rounded-xl transition-colors ${user.isActive ? 'bg-rose-500/10 text-rose-500 hover:bg-rose-500/20' : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'}`}>
+                      {user.isActive ? 'Restrict' : 'Activate'}
+                    </button>
+                  )}
+                  {!user.isAdmin && (
+                    <button onClick={() => handleDeleteClick(user._id)} className="w-10 flex items-center justify-center bg-zinc-800 text-rose-500 hover:bg-rose-900/20 rounded-xl transition-colors"><FaTrashAlt size={12} /></button>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </motion.div>
       </div>

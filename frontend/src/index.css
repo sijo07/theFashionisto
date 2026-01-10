@@ -66,3 +66,14 @@ body {
 .font-cinzel {
   font-family: 'Cinzel', serif;
 }
+
+/* Safe Area Utilities */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+}
