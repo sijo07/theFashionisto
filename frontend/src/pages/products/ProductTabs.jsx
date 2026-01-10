@@ -20,7 +20,7 @@ const ProductTabs = ({
 }) => {
   const [activeTab, setActiveTab] = useState("reviews");
   const [filterRating, setFilterRating] = useState("all");
-  const [showBreakdown, setShowBreakdown] = useState(true);
+  const [showBreakdown, setShowBreakdown] = useState(false);
 
   const [deleteReview] = useDeleteReviewMutation();
 
@@ -98,27 +98,33 @@ const ProductTabs = ({
 
             {/* Left Column: Rating Summary (Sidebar) */}
             <div className="lg:w-1/3 flex-shrink-0">
-              <div className="bg-white/5 backdrop-blur-md rounded-2xl p-8 border border-white/10 sticky top-24">
-                <h3 className="text-xl font-playfair font-bold text-white mb-6 italic">Rating Overview</h3>
-                <div className="text-center">
-                  <div className="text-7xl font-black text-white mb-2 tracking-tighter">
+              <div className="bg-[#09090b] p-8 border border-zinc-800 sticky top-24 relative overflow-hidden group">
+                {/* Decorative Elements */}
+                <div className="absolute bottom-0 right-0 w-24 h-24 bg-red-600/5 rounded-full blur-3xl transform group-hover:scale-150 transition-transform duration-700"></div>
+
+                <h3 className="text-xl font-playfair font-black text-white mb-8 italic flex items-center gap-3">
+                  Rating <span className="text-red-600">Index</span>
+                </h3>
+
+                <div className="text-center relative z-10">
+                  <div className="text-8xl font-black text-white mb-2 tracking-tighter leading-none">
                     {product.rating > 0 ? product.rating.toFixed(1) : "0.0"}
                   </div>
-                  <div className="flex justify-center mb-4">
+                  <div className="flex justify-center mb-6 scale-110">
                     <StarRating value={product.rating} readOnly size={20} />
                   </div>
-                  <p className="text-sm text-zinc-400 font-medium mb-8 uppercase tracking-widest">{totalReviews} Verified Returns</p>
+                  <p className="text-[10px] text-zinc-500 font-bold mb-10 uppercase tracking-[0.2em]">{totalReviews} Verified Returns</p>
 
                   <button
                     onClick={() => setShowBreakdown(!showBreakdown)}
-                    className="w-full flex items-center justify-center gap-2 py-3 text-xs font-bold uppercase tracking-widest text-zinc-300 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+                    className="w-full flex items-center justify-center gap-2 py-4 text-[10px] font-black uppercase tracking-[0.25em] text-white border border-zinc-800 bg-black hover:bg-white hover:text-black hover:border-white transition-all"
                   >
-                    {showBreakdown ? "Hide Distribution" : "View Distribution"}
-                    {showBreakdown ? <FaChevronUp size={10} /> : <FaChevronDown size={10} />}
+                    {showBreakdown ? "Hide Data" : "View Data"}
+                    {showBreakdown ? <FaChevronUp size={8} /> : <FaChevronDown size={8} />}
                   </button>
                 </div>
 
-                <div className={`space-y-4 overflow-hidden transition-all duration-300 ease-in-out ${showBreakdown ? 'max-h-[500px] opacity-100 pt-8 border-t border-white/10 mt-6' : 'max-h-0 opacity-0'}`}>
+                <div className={`space-y-4 overflow-hidden transition-all duration-300 ease-in-out ${showBreakdown ? 'max-h-[500px] opacity-100 pt-10 border-t border-zinc-900 mt-8' : 'max-h-0 opacity-0'}`}>
                   {[5, 4, 3, 2, 1].map((star) => {
                     const count = ratingCounts[star];
                     const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
@@ -126,16 +132,16 @@ const ProductTabs = ({
                       <button
                         key={star}
                         onClick={() => setFilterRating(filterRating === star ? "all" : star)}
-                        className={`w-full flex items-center text-xs gap-3 group transition-colors px-2 py-1 -mx-2 rounded ${filterRating === star ? 'bg-white/5' : 'hover:bg-white/5'}`}
+                        className={`w-full flex items-center text-xs gap-4 group transition-colors p-2 -mx-2 hover:bg-zinc-900/50 ${filterRating === star ? 'bg-zinc-900' : ''}`}
                       >
-                        <div className="w-4 font-bold text-zinc-400">{star}★</div>
-                        <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                        <div className="w-6 font-bold text-zinc-400 font-mono">{star}★</div>
+                        <div className="flex-1 h-1 bg-zinc-900 overflow-hidden">
                           <div
-                            className={`h-full rounded-full transition-all duration-500 ${filterRating === star ? 'bg-red-500' : 'bg-white'}`}
+                            className={`h-full transition-all duration-500 ${filterRating === star ? 'bg-red-600' : 'bg-zinc-600 group-hover:bg-white'}`}
                             style={{ width: `${percentage}%` }}
                           ></div>
                         </div>
-                        <div className="w-6 text-right text-zinc-500 font-mono">{count}</div>
+                        <div className="w-8 text-right text-zinc-500 font-mono text-[10px]">{count}</div>
                       </button>
                     )
                   })}
@@ -152,14 +158,14 @@ const ProductTabs = ({
                 </h3>
 
                 {/* Filter Dropdown */}
-                <div className="relative mt-4 sm:mt-0">
-                  <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest"><FaFilter className="inline mb-[2px]" /> Filter:</span>
-                    <div className="relative">
+                <div className="relative mt-6 sm:mt-0 w-full sm:w-auto">
+                  <div className="flex items-center gap-4 bg-zinc-900/50 p-1 border border-zinc-800 w-full sm:w-auto">
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest pl-3 flex-shrink-0"><FaFilter className="inline mb-[2px] mr-2" /> Filter</span>
+                    <div className="relative flex-1 sm:flex-none">
                       <select
                         value={filterRating}
                         onChange={(e) => setFilterRating(e.target.value === "all" ? "all" : Number(e.target.value))}
-                        className="appearance-none bg-black border border-white/20 text-zinc-300 py-1.5 pl-3 pr-8 rounded text-xs font-bold uppercase tracking-wider focus:outline-none focus:border-red-600 cursor-pointer hover:border-white transition-colors"
+                        className="w-full sm:w-auto appearance-none bg-black border-l border-zinc-800 text-white py-2 pl-4 pr-10 text-[10px] font-bold uppercase tracking-widest focus:outline-none cursor-pointer hover:bg-zinc-900 transition-colors rounded-none"
                       >
                         <option value="all">All Stars</option>
                         <option value="5">5 Stars</option>
@@ -196,45 +202,42 @@ const ProductTabs = ({
                     <motion.div
                       initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                       key={review._id}
-                      className="bg-zinc-900/50 p-6 rounded-xl border border-white/5 hover:border-white/20 transition-all group"
+                      className="bg-[#09090b] p-6 lg:p-8 border-b border-zinc-900 hover:bg-zinc-900/20 transition-all group last:border-0"
                     >
-                      <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-zinc-800 to-black border border-white/10 flex items-center justify-center text-white font-bold text-lg">
+                      <div className="flex flex-col sm:flex-row items-start gap-6">
+                        <div className="w-12 h-12 rounded-none bg-zinc-900 border border-zinc-800 flex items-center justify-center text-white font-black text-xl flex-shrink-0">
                           {review.name.charAt(0).toUpperCase()}
                         </div>
-                        <div className="flex-1">
-                          <div className="flex justify-between items-start mb-2">
+                        <div className="flex-1 w-full">
+                          <div className="flex flex-col sm:flex-row justify-between items-start mb-4 gap-2">
                             <div>
-                              <h4 className="font-bold text-white text-sm uppercase tracking-wide">{review.name}</h4>
-                              <div className="flex items-center gap-3 mt-1">
-                                <StarRating value={review.rating} readOnly size={12} />
-                                {review.isVerifiedPurchase ? (
-                                  <span className="text-[10px] text-emerald-500 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 flex items-center gap-1 uppercase tracking-wider">
-                                    <FaCheckCircle size={8} /> Verified
-                                  </span>
-                                ) : (
-                                  <span className="text-[10px] text-zinc-500 font-bold bg-zinc-800 px-2 py-0.5 rounded border border-zinc-700 flex items-center gap-1 uppercase tracking-wider">
-                                    <FaTimesCircle size={8} /> Unverified
+                              <div className="flex items-center gap-3 mb-2">
+                                <h4 className="font-bold text-white text-xs uppercase tracking-[0.15em]">{review.name}</h4>
+                                {review.isVerifiedPurchase && (
+                                  <span className="text-[9px] text-emerald-500 font-bold border border-emerald-900/50 bg-emerald-900/10 px-1.5 py-0.5 uppercase tracking-wider">
+                                    Verified Patron
                                   </span>
                                 )}
                               </div>
+                              <div className="flex items-center gap-4">
+                                <StarRating value={review.rating} readOnly size={10} />
+                                <span className="text-[10px] text-zinc-600 font-mono uppercase border-l border-zinc-800 pl-4">{new Date(review.createdAt).toLocaleDateString()}</span>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-4">
-                              <span className="text-[10px] text-zinc-600 font-mono font-bold uppercase">{new Date(review.createdAt).toLocaleDateString()}</span>
 
-                              {/* Delete Button */}
-                              {userInfo && (userInfo._id === review.user || userInfo.isAdmin) && (
-                                <button
-                                  onClick={() => handleDeleteReview(review._id)}
-                                  className="text-[10px] font-bold text-zinc-600 hover:text-red-500 transition-colors uppercase tracking-wider group-hover:opacity-100 opacity-0"
-                                  title="Delete this review"
-                                >
-                                  <FaTrash />
-                                </button>
-                              )}
-                            </div>
+                            {/* Delete Button */}
+                            {userInfo && (userInfo._id === review.user || userInfo.isAdmin) && (
+                              <button
+                                onClick={() => handleDeleteReview(review._id)}
+                                className="text-[10px] font-bold text-zinc-700 hover:text-red-500 transition-colors uppercase tracking-wider flex items-center gap-2 mt-2 sm:mt-0"
+                                title="Delete this review"
+                              >
+                                <FaTrash size={10} /> Remove
+                              </button>
+                            )}
                           </div>
-                          <p className="text-zinc-300 text-sm leading-relaxed mt-3 font-light">
+
+                          <p className="text-zinc-400 text-sm leading-7 font-light border-l-2 border-zinc-800 pl-4">
                             "{review.comment}"
                           </p>
                         </div>
@@ -255,63 +258,86 @@ const ProductTabs = ({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
-            className="max-w-2xl mx-auto"
+            className="w-full"
           >
-            <div className="bg-white/5 rounded-2xl p-8 md:p-12 border border-white/10 backdrop-blur-md">
-              <h3 className="text-2xl font-playfair font-bold text-white mb-8 text-center italic">Share Your Experience</h3>
+            <div className="bg-[#09090b] p-6 md:p-10 lg:p-12 border border-zinc-800 relative group">
+              {/* Decorative Elements */}
+              <div className="absolute top-0 left-0 w-1 h-full bg-red-600/50 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-700"></div>
+
+              <h3 className="text-4xl font-playfair font-black text-white mb-8 lg:mb-12 italic tracking-tighter">
+                Share <span className="text-red-600">Experience</span>
+              </h3>
 
               {userInfo ? (
                 hasReviewed ? (
-                  <div className="text-center py-10">
-                    <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-500/20 text-emerald-500">
+                  <div className="text-center py-20 border border-dashed border-zinc-800">
+                    <div className="w-20 h-20 bg-emerald-900/20 rounded-none flex items-center justify-center mx-auto mb-6 border border-emerald-900/50 text-emerald-500">
                       <FaCheckCircle size={32} />
                     </div>
-                    <h4 className="font-bold text-xl text-white mb-2">Review Submitted</h4>
-                    <p className="text-zinc-400">Thank you for sharing your feedback with the community.</p>
+                    <h4 className="font-bold text-xl text-white mb-2 uppercase tracking-wider">Review Submitted</h4>
+                    <p className="text-zinc-500 font-mono text-xs">Your voice has been recorded in the register.</p>
                   </div>
                 ) : (
-                  <form onSubmit={submitHandler} className="space-y-8">
-                    <div className="text-center">
-                      <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Rate this Product</label>
-                      <div className="flex justify-center mb-3">
-                        <StarRating
-                          value={rating}
-                          onChange={(val) => setRating(val)}
-                          size={32}
-                        />
-                      </div>
-                      <p className="text-center text-sm font-bold text-red-500 h-6 uppercase tracking-widest">
-                        {rating === 1 && "Poor"}
-                        {rating === 2 && "Fair"}
-                        {rating === 3 && "Good"}
-                        {rating === 4 && "Very Good"}
-                        {rating === 5 && "Exceptional"}
-                      </p>
-                    </div>
+                  <form onSubmit={submitHandler} className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 border-t border-zinc-900 pt-8 lg:pt-10">
+                    {/* Left Column: Rating & Submit */}
+                    <div className="lg:col-span-5 flex flex-col justify-between space-y-10 border-b border-zinc-900 pb-10 mb-2 lg:border-none lg:pb-0 lg:mb-0">
+                      <div>
+                        <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em] mb-6">Rate Product</label>
+                        <div className="flex justify-start mb-4 group/stars">
+                          <StarRating
+                            value={rating}
+                            onChange={(val) => setRating(val)}
+                            size={32}
 
-                    <div>
-                      <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3">Your Remarks</label>
-                      <div className="relative">
-                        <FaPenFancy className="absolute left-4 top-4 text-zinc-600" />
-                        <textarea
-                          value={comment}
-                          onChange={(e) => setComment(e.target.value)}
-                          className="w-full p-4 pl-10 border border-white/10 rounded-xl focus:ring-1 focus:ring-red-500 focus:border-red-500 outline-none text-sm min-h-[150px] resize-none bg-black/40 text-white placeholder-zinc-700 transition-all font-light"
-                          placeholder="How was the quality? The fit? Would you recommend it?"
-                        ></textarea>
+                          />
+                        </div>
+                        <div className="h-8 flex items-center">
+                          <span className="text-xs font-bold text-white bg-red-600 px-3 py-1 uppercase tracking-widest">
+                            {rating === 1 && "Poor"}
+                            {rating === 2 && "Fair"}
+                            {rating === 3 && "Good"}
+                            {rating === 4 && "Very Good"}
+                            {rating === 5 && "Exceptional"}
+                            {rating === 0 && "Select Rating"}
+                          </span>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="flex justify-center pt-4">
                       <button
                         type="submit"
                         disabled={loadingProductReview || rating === 0}
-                        className={`w-full md:w-auto px-12 py-4 rounded-full text-white font-bold text-xs uppercase tracking-[0.15em] transition-all border ${loadingProductReview || rating === 0
-                          ? "bg-zinc-800 border-zinc-700 cursor-not-allowed text-zinc-500"
-                          : "bg-red-600 border-red-600 hover:bg-black hover:text-red-500 shadow-[0_0_20px_rgba(220,38,38,0.3)] hover:shadow-none"
+                        className={`hidden lg:block w-full px-8 py-6 text-white font-black text-xs uppercase tracking-[0.25em] transition-all border border-zinc-800 bg-[#121214] hover:bg-white hover:text-black hover:border-white relative overflow-hidden ${loadingProductReview || rating === 0
+                          ? "opacity-50 cursor-not-allowed"
+                          : ""
                           }`}
                       >
-                        {loadingProductReview ? "Submitting..." : "Submit Review"}
+                        <span className="relative z-10">{loadingProductReview ? "Processing..." : "Publish Review"}</span>
+                      </button>
+                    </div>
+
+                    {/* Right Column: Remarks */}
+                    <div className="lg:col-span-7 relative">
+                      <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em] mb-6">Editorial Remarks</label>
+                      <div className="relative lg:h-full group/input">
+                        <FaPenFancy className="absolute left-6 top-6 text-zinc-700 group-hover/input:text-red-600 transition-colors" />
+                        <textarea
+                          value={comment}
+                          onChange={(e) => setComment(e.target.value)}
+                          className="w-full lg:h-full min-h-[150px] p-6 pl-14 bg-zinc-900/30 border border-zinc-800 focus:border-red-600 focus:bg-zinc-900/50 outline-none text-sm text-zinc-300 placeholder-zinc-700 transition-all font-light resize-none leading-relaxed rounded-none"
+                          placeholder="Detail your experience with the fit, texture, and overall quality..."
+                        ></textarea>
+                      </div>
+
+                      {/* Mobile Submit Button (Visible only on Mobile) */}
+                      <button
+                        type="submit"
+                        disabled={loadingProductReview || rating === 0}
+                        className={`lg:hidden w-full px-8 py-6 mt-6 md:mt-8 text-white font-black text-xs uppercase tracking-[0.25em] transition-all border border-zinc-800 bg-[#121214] hover:bg-white hover:text-black hover:border-white relative overflow-hidden ${loadingProductReview || rating === 0
+                          ? "opacity-50 cursor-not-allowed"
+                          : ""
+                          }`}
+                      >
+                        <span className="relative z-10">{loadingProductReview ? "Processing..." : "Publish Review"}</span>
                       </button>
                     </div>
                   </form>

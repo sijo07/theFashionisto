@@ -6,7 +6,17 @@ const ScrollToTop = () => {
     const { pathname } = useLocation();
 
     useEffect(() => {
-        window.scrollTo(0, 0);
+        // Disable browser's default scroll restoration for this session
+        if ('scrollRestoration' in window.history) {
+            window.history.scrollRestoration = 'manual';
+        }
+
+        // Force scroll to top
+        window.scrollTo({
+            top: 0,
+            left: 0,
+            behavior: "instant"
+        });
     }, [pathname]);
 
     return null;
