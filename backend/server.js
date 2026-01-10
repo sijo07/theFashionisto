@@ -47,7 +47,7 @@ app.use(cors({
       "https://thefashionisto.vercel.app" // Add your production URL here
     ].filter(Boolean);
 
-    if (allowedOrigins.includes(origin) || !origin || origin.endsWith(".vercel.app")) {
+    if (allowedOrigins.includes(origin) || !origin || origin.endsWith(".vercel.app") || origin.endsWith(".onrender.com")) {
       callback(null, true);
     } else {
       console.warn(`CORS Blocked Origin: ${origin}`); // Log blocked origins
