@@ -94,8 +94,8 @@ const ProductList = () => {
     <div className="min-h-screen bg-[#050505] font-sans text-white pb-20">
       <AdminHeader title="Create Product" subtitle="Add new inventory item" />
 
-      <div className="p-6 lg:p-10 max-w-[1440px] mx-auto">
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+      <div className="p-4 md:p-6 lg:p-10 max-w-[1440px] mx-auto">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
 
           {/* Left Column: Image & Basic Info */}
           <div className="lg:col-span-4 space-y-8">
@@ -182,7 +182,7 @@ const ProductList = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-3">
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
                 {activeSizes.map(s => {
                   const isSelected = sizeStock.hasOwnProperty(s);
                   return (

@@ -69,18 +69,18 @@ const Shipping = () => {
   const labelClass = "block text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-2";
 
   return (
-    <div className="bg-[#050505] min-h-screen text-white pt-24 md:pt-32 pb-20">
+    <div className="bg-[#050505] min-h-screen text-white pt-20 md:pt-32 pb-20">
       <div className="max-w-[1440px] mx-auto px-6">
 
         {/* Progress Steps Center */}
-        <div className="mb-16 flex justify-center">
+        <div className="mb-8 md:mb-16 flex justify-center">
           <ProgressSteps step1 step2 />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-start">
 
           {/* Left Column: Form */}
-          <div className="order-2 lg:order-1">
+          <div className="order-1">
             <header className="mb-12 border-b border-zinc-900 pb-8">
               <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-4 leading-none">
                 Delivery <span className="text-red-600 italic">Details</span>
@@ -342,7 +342,7 @@ const Shipping = () => {
           </div>
 
           {/* Right Column: Collection Notes / Branding */}
-          <div className="order-1 lg:order-2 sticky top-32 space-y-12">
+          <div className="order-2 sticky top-32 space-y-12">
             <div className="relative aspect-square w-full overflow-hidden bg-zinc-900">
               <img
                 src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop"

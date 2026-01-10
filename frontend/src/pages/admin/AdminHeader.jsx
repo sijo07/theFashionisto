@@ -104,7 +104,7 @@ const AdminHeader = ({ title, subtitle, children }) => {
                                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                    className="absolute right-0 mt-4 w-[320px] bg-zinc-900 rounded-md shadow-2xl border border-zinc-800 overflow-hidden"
+                                    className="fixed left-4 right-4 top-20 w-auto z-50 sm:absolute sm:right-0 sm:left-auto sm:top-auto sm:mt-4 sm:w-[320px] bg-zinc-900 rounded-md shadow-2xl border border-zinc-800 overflow-hidden"
                                 >
                                     <div className="p-4 bg-black/40 border-b border-zinc-800 flex justify-between items-center">
                                         <h3 className="font-bold text-xs uppercase tracking-wider text-white">System Alerts</h3>

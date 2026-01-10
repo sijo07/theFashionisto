@@ -33,7 +33,7 @@ const Home = () => {
           <span className="text-red-500 font-black uppercase tracking-[0.4em] text-base md:text-lg mb-6 block drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]">
             New Collection <span className="text-white">/</span> 2026
           </span>
-          <h1 className="text-5xl md:text-7xl lg:text-9xl font-black text-white tracking-tighter mb-8 leading-none">
+          <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-9xl font-black text-white tracking-tighter mb-8 leading-none">
             UNCOMPROMISED<br /><span className="text-stroke-white text-transparent">AESTHETIC</span>
           </h1>
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mt-12">
